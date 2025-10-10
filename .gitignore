@@ -4,3 +4,7 @@
 
 /.vs
 /BusinessLogic/obj
+/Domain/obj
+/Infraestructure/obj
+/Repository/obj
+/WebApiAutenticacion/obj
