@@ -2,9 +2,13 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/BusinessLogic/obj
-/Domain/obj
-/Infraestructure/obj
-/Repository/obj
-/WebApiAutenticacion/obj
+# Ignorar todas las carpetas obj y bin en cualquier subcarpeta
+**/obj/
+**/bin/
+
+# Ignorar archivos y carpetas generados por Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates

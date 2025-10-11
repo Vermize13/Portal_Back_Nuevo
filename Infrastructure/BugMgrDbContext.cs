@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Domain.Entity;
 
-namespace Domain
+namespace Infrastructure
 {
     public class BugMgrDbContext : DbContext
     {
@@ -56,6 +59,22 @@ namespace Domain
             b.Entity<Project>().Property(x => x.Name).IsRequired();
 
             base.OnModelCreating(b);
+        }
+    }
+
+    public class BugMgrDbContextFactory : IDesignTimeDbContextFactory<BugMgrDbContext>
+    {
+        public BugMgrDbContext CreateDbContext(string[] args)
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
+                .Build();
+
+            var optionsBuilder = new DbContextOptionsBuilder<BugMgrDbContext>();
+            optionsBuilder.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+
+            return new BugMgrDbContext(optionsBuilder.Options);
         }
     }
 }
