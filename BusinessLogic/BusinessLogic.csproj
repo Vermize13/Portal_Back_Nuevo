@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -18,22 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\Infraestructure\Infraestructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="usecase\BalanceFinanciero\" />
-    <Folder Include="usecase\CertificacionCumplimiento\" />
-    <Folder Include="usecase\Estado\" />
-    <Folder Include="usecase\FlujoAprobacionPasoResponsable\" />
-    <Folder Include="usecase\FlujoAprobacion\" />
-    <Folder Include="usecase\MetadatoFiduciaria\" />
-    <Folder Include="usecase\Prefactura\" />
-    <Folder Include="usecase\Radicado\" />
-    <Folder Include="usecase\Rol\" />
-    <Folder Include="usecase\UsuariosDatosContratista\" />
-    <Folder Include="usecase\ValidacionFinanciera\" />
-    <Folder Include="usecase\VistoBueno\" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Repository\Repository.csproj" />
   </ItemGroup>
 
 </Project>
