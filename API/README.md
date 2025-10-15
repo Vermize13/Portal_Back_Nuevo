@@ -96,9 +96,98 @@ API/
 └── appsettings.json     # Configuración de la aplicación
 ```
 
+## Autenticación JWT
+
+La API ahora incluye autenticación JWT completa con los siguientes endpoints:
+
+### Endpoints de Autenticación
+
+#### Registro de Usuario
+```bash
+POST /api/Auth/register
+Content-Type: application/json
+
+{
+  "name": "Juan Pérez",
+  "email": "juan.perez@example.com",
+  "username": "jperez",
+  "password": "password123"
+}
+```
+
+#### Login
+```bash
+POST /api/Auth/login
+Content-Type: application/json
+
+{
+  "username": "jperez",
+  "password": "password123"
+}
+```
+
+#### Obtener Usuario Actual (Autenticado)
+```bash
+GET /api/Auth/me
+Authorization: Bearer {tu_token_jwt}
+```
+
+### Configuración JWT
+
+Actualiza las credenciales JWT en `appsettings.json`:
+
+```json
+{
+  "JwtSettings": {
+    "SecretKey": "CAMBIAR-EN-PRODUCCION-MINIMO-32-CARACTERES",
+    "Issuer": "BugMgrApi",
+    "Audience": "BugMgrClient",
+    "ExpirationMinutes": 60
+  }
+}
+```
+
+⚠️ **IMPORTANTE:** Cambiar `SecretKey` en producción con una clave segura de al menos 32 caracteres.
+
+### Swagger con JWT
+
+Swagger UI ahora incluye soporte para JWT:
+
+1. Registra o inicia sesión para obtener un token
+2. Haz clic en el botón "Authorize" en Swagger UI
+3. Ingresa: `Bearer {tu_token}`
+4. Ahora puedes probar endpoints protegidos
+
+### Roles Disponibles
+
+- **Admin**: Acceso total al sistema
+- **ProductOwner**: Gestión de proyectos
+- **Developer**: Desarrollo (rol por defecto al registrarse)
+- **Tester**: Gestión de pruebas
+
+### Endpoints de Prueba
+
+Para probar la autorización:
+
+- `GET /api/Test/public` - Acceso público
+- `GET /api/Test/protected` - Requiere autenticación
+- `GET /api/Test/admin-only` - Solo Admin
+- `GET /api/Test/management` - Admin o ProductOwner
+
+### Auditoría
+
+Todas las acciones de autenticación se registran automáticamente:
+- Login exitoso
+- Registro de usuarios
+- Incluye IP, User-Agent y detalles
+
+Para más detalles, consulta:
+- **AUTHENTICATION.md** - Documentación completa del flujo de autenticación
+- **EXAMPLES.md** - Ejemplos de uso con cURL, JavaScript y Angular
+
 ## Próximos Pasos
 
-Esta API incluye controladores de ejemplo. Para completar la implementación:
+Para completar la implementación:
 
 1. Agregar controladores para las entidades restantes:
    - Incidents (Incidencias)
@@ -109,18 +198,23 @@ Esta API incluye controladores de ejemplo. Para completar la implementación:
    - Notifications
    - AuditLogs
 
-2. Implementar autenticación JWT
+2. ~~Implementar autenticación JWT~~ ✅ **COMPLETADO**
 
 3. Agregar validaciones con FluentValidation
 
 4. Implementar patrones CQRS o Mediator para casos de uso complejos
 
+5. Insertar roles iniciales en la base de datos (ver WebApi/Scripts/seed-roles.sql)
+
 ## Tecnologías Utilizadas
 
 - **Swashbuckle.AspNetCore 9.0.6** - Generación de Swagger/OpenAPI
 - **Microsoft.AspNetCore.OpenApi 9.0.9** - Soporte nativo OpenAPI
+- **Microsoft.AspNetCore.Authentication.JwtBearer 9.0.9** - Autenticación JWT
 - **Entity Framework Core 9.0.9** - ORM
 - **Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4** - Proveedor PostgreSQL
+- **BCrypt.Net-Core 1.6.0** - Hashing seguro de contraseñas
+- **Newtonsoft.Json 13.0.4** - Serialización JSON para auditoría
 
 ## Soporte
 
