@@ -2,6 +2,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Repository;
 using System.Text;
 using WebApi.DTOs;
 using WebApi.Services;
@@ -54,9 +55,13 @@ builder.Services.AddDbContext<BugMgrDbContext>(options =>
               .MapEnum<Domain.Entity.IncidentPriority>()
               .MapEnum<Domain.Entity.NotificationChannel>()));
 
+// Register repositories
+builder.Services.AddRepository();
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
