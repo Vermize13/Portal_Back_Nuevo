@@ -22,4 +22,19 @@
     <ProjectReference Include="..\Repository\Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="usecase\BalanceFinanciero\" />
+    <Folder Include="usecase\CertificacionCumplimiento\" />
+    <Folder Include="usecase\Estado\" />
+    <Folder Include="usecase\FlujoAprobacionPasoResponsable\" />
+    <Folder Include="usecase\FlujoAprobacion\" />
+    <Folder Include="usecase\MetadatoFiduciaria\" />
+    <Folder Include="usecase\Prefactura\" />
+    <Folder Include="usecase\Radicado\" />
+    <Folder Include="usecase\Rol\" />
+    <Folder Include="usecase\UsuariosDatosContratista\" />
+    <Folder Include="usecase\ValidacionFinanciera\" />
+    <Folder Include="usecase\VistoBueno\" />
+  </ItemGroup>
+
 </Project>
