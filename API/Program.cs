@@ -1,5 +1,6 @@
 using Infrastructure;
 using Repository;
+using BusinessLogic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -90,6 +91,9 @@ if (!string.IsNullOrEmpty(connectionString))
     builder.Services.AddInfrastructure(connectionString);
     builder.Services.AddRepository();
 }
+
+// Register business logic services (RF1 implementation)
+builder.Services.AddBusinessLogicServices();
 
 // Register authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
