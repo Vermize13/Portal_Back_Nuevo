@@ -643,7 +643,7 @@ namespace API.Controllers
             };
         }
 
-        private async Task TrackChange(Guid incidentId, Guid userId, string fieldName, string? oldValue, string? newValue)
+        private Task TrackChange(Guid incidentId, Guid userId, string fieldName, string? oldValue, string? newValue)
         {
             var history = new IncidentHistory
             {
@@ -657,6 +657,7 @@ namespace API.Controllers
             };
 
             _context.IncidentHistories.Add(history);
+            return Task.CompletedTask;
         }
 
         private Guid GetUserId()
