@@ -12,3 +12,23 @@
 *.suo
 *.userosscache
 *.sln.docstates
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
