@@ -65,6 +65,8 @@ namespace API.Controllers
                 .Include(i => i.Comments)
                 .AsQueryable();
 
+            // Note: Attachments are loaded separately for performance
+
             if (projectId.HasValue)
                 query = query.Where(i => i.ProjectId == projectId.Value);
 
@@ -107,6 +109,8 @@ namespace API.Controllers
                 .Include(i => i.Labels).ThenInclude(il => il.Label)
                 .Include(i => i.Comments)
                 .FirstOrDefaultAsync(i => i.Id == id);
+
+            // Note: Attachments count is loaded separately for performance
 
             if (incident == null)
                 return NotFound();
@@ -612,6 +616,9 @@ namespace API.Controllers
         // Helper methods
         private IncidentResponse MapToResponse(Incident incident)
         {
+            // Count attachments for this incident
+            var attachmentCount = _context.Attachments.Count(a => a.IncidentId == incident.Id);
+
             return new IncidentResponse
             {
                 Id = incident.Id,
@@ -639,7 +646,7 @@ namespace API.Controllers
                     ColorHex = il.Label?.ColorHex
                 }).ToList() ?? new List<LabelInfo>(),
                 CommentCount = incident.Comments?.Count ?? 0,
-                AttachmentCount = 0 // Will be implemented when attachment endpoints are added
+                AttachmentCount = attachmentCount
             };
         }
 

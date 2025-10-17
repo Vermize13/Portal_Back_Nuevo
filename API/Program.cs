@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using API.DTOs;
 using API.Services;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,10 +96,25 @@ if (!string.IsNullOrEmpty(connectionString))
 // Register business logic services (RF1 implementation)
 builder.Services.AddBusinessLogicServices();
 
+// Configure settings
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
+builder.Services.Configure<BackupSettings>(builder.Configuration.GetSection("BackupSettings"));
+
+// Register Resend email service
+var resendApiKey = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>()?.ResendApiKey ?? "";
+builder.Services.AddOptions<ResendClientOptions>().Configure(o =>
+{
+    o.ApiToken = resendApiKey;
+});
+builder.Services.AddHttpClient<IResend, ResendClient>();
+
 // Register authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>

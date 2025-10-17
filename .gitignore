@@ -13,6 +13,12 @@
 *.userosscache
 *.sln.docstates
 
+# Ignorar archivos de backup y uploads
+backups/
+wwwroot/uploads/
+
+# Ignorar archivos de configuración sensibles (producción)
+appsettings.Production.json
 # Environment files
 .env
 .env.local
