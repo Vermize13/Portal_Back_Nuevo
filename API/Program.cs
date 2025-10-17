@@ -98,6 +98,7 @@ builder.Services.AddBusinessLogicServices();
 // Register authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>

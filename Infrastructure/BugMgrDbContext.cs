@@ -21,6 +21,7 @@ namespace Infrastructure
         public DbSet<Label> Labels => Set<Label>();
         public DbSet<IncidentLabel> IncidentLabels => Set<IncidentLabel>();
         public DbSet<IncidentComment> IncidentComments => Set<IncidentComment>();
+        public DbSet<IncidentHistory> IncidentHistories => Set<IncidentHistory>();
         public DbSet<Attachment> Attachments => Set<Attachment>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
