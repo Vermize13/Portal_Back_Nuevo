@@ -1,0 +1,157 @@
+### RF6 - Examples and Testing
+
+### Variables
+@baseUrl = http://localhost:5000
+@token = YOUR_JWT_TOKEN_HERE
+@incidentId = YOUR_INCIDENT_ID_HERE
+@backupId = YOUR_BACKUP_ID_HERE
+@attachmentId = YOUR_ATTACHMENT_ID_HERE
+
+### ========================================
+### RF6.1 - Create Database Backup
+### ========================================
+
+POST {{baseUrl}}/api/backup
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Manual backup before major update"
+}
+
+### ========================================
+### Get All Backups
+### ========================================
+
+GET {{baseUrl}}/api/backup
+Authorization: Bearer {{token}}
+
+### ========================================
+### Get Specific Backup
+### ========================================
+
+GET {{baseUrl}}/api/backup/{{backupId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.2 - Restore Database Backup
+### ========================================
+
+POST {{baseUrl}}/api/backup/restore
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "backupId": "{{backupId}}",
+  "notes": "Restoring due to data corruption"
+}
+
+### ========================================
+### RF6.4 - Upload Attachment to Incident
+### ========================================
+
+POST {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="screenshot.png"
+Content-Type: image/png
+
+< ./path/to/your/file.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ========================================
+### RF6.4 - List All Attachments for Incident
+### ========================================
+
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.4 - Get Specific Attachment Info
+### ========================================
+
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.4 - Download Attachment
+### ========================================
+
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}/download
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.4 - Delete Attachment
+### ========================================
+
+DELETE {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.3 - Email Notifications (Automatic)
+### ========================================
+# Email notifications are sent automatically when:
+# 1. An incident is assigned to a user
+# 2. An incident status changes
+
+### Example: Assign incident (triggers email)
+PUT {{baseUrl}}/api/incidents/{{incidentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "assigneeId": "user-guid-here"
+}
+
+### Example: Change incident status (triggers email)
+PUT {{baseUrl}}/api/incidents/{{incidentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": 1
+}
+
+### ========================================
+### RF6.5 - File Size Validation Test
+### ========================================
+
+### This will fail if file exceeds MaxFileSizeBytes (10MB by default)
+POST {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="large-file.zip"
+Content-Type: application/zip
+
+< ./path/to/large/file.zip
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Expected Response (if file too large):
+### {
+###   "error": "File size exceeds maximum allowed size of 10485760 bytes"
+### }
+
+### ========================================
+### Invalid File Extension Test
+### ========================================
+
+### This will fail if extension is not in AllowedExtensions
+POST {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="malicious.exe"
+Content-Type: application/octet-stream
+
+< ./path/to/file.exe
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Expected Response (if extension not allowed):
+### {
+###   "error": "File extension .exe is not allowed"
+### }
