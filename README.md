@@ -75,12 +75,12 @@ Portal_Back_Nuevo/
 
 3. **Iniciar los contenedores:**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Aplicar migraciones (primera vez):**
    ```bash
-   docker-compose exec api dotnet ef database update --project /src/Infrastructure
+   docker compose exec api dotnet ef database update --project /src/Infrastructure
    ```
 
 5. **Acceder a la API:**
@@ -351,16 +351,16 @@ El sistema incluye soporte completo para contenedores:
 - **Comandos Docker**:
   ```bash
   # Construir e iniciar servicios
-  docker-compose up -d
+  docker compose up -d
   
   # Ver logs
-  docker-compose logs -f
+  docker compose logs -f
   
   # Detener servicios
-  docker-compose down
+  docker compose down
   
   # Reconstruir imagen
-  docker-compose up -d --build
+  docker compose up -d --build
   ```
 
 ### RNF5.2: Compatibilidad de Navegadores
@@ -407,28 +407,28 @@ dotnet run
 
 #### Iniciar servicios
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Ver logs
 ```bash
-docker-compose logs -f api
-docker-compose logs -f postgres
+docker compose logs -f api
+docker compose logs -f postgres
 ```
 
 #### Ejecutar migraciones en contenedor
 ```bash
-docker-compose exec api dotnet ef database update --project /src/Infrastructure
+docker compose exec api dotnet ef database update --project /src/Infrastructure
 ```
 
 #### Detener servicios
 ```bash
-docker-compose down
+docker compose down
 ```
 
 #### Limpiar volúmenes (⚠️ elimina datos)
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## 📋 Requerimientos Funcionales Implementados
@@ -528,9 +528,9 @@ dotnet format
    ```bash
    docker build -t bugmgr-api:latest .
    ```
-3. **Ejecutar con docker-compose**:
+3. **Ejecutar con docker compose**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 ### Consideraciones de Producción
