@@ -6,5 +6,6 @@ namespace API.Services
     {
         Task NotifyIncidentAssignmentAsync(Incident incident, Guid assigneeId);
         Task NotifyIncidentStatusChangeAsync(Incident incident, IncidentStatus oldStatus, IncidentStatus newStatus);
+        Task SendEmailAsync(string toEmail, string toName, string subject, string htmlBody);
     }
 }
