@@ -33,7 +33,24 @@ El archivo `openapi.json` contiene:
 
 Si realizas cambios en los controladores, DTOs o modelos de la API, necesitas regenerar el archivo `openapi.json`:
 
-### Prerrequisitos
+### Método 1: Usando el script automatizado (Recomendado)
+
+El repositorio incluye un script que automatiza todo el proceso:
+
+```bash
+cd /ruta/al/proyecto
+bash API/Scripts/generate-openapi.sh
+```
+
+El script realizará:
+- ✅ Compilación del proyecto API
+- ✅ Generación del archivo OpenAPI
+- ✅ Validación del JSON generado
+- ✅ Muestra un resumen con estadísticas
+
+### Método 2: Manual
+
+#### Prerrequisitos
 
 1. Tener instalado .NET 9.0 SDK
 2. Tener instalada la herramienta Swashbuckle.AspNetCore.Cli:
@@ -42,7 +59,7 @@ Si realizas cambios en los controladores, DTOs o modelos de la API, necesitas re
 dotnet tool install -g Swashbuckle.AspNetCore.Cli
 ```
 
-### Pasos para regenerar
+#### Pasos para regenerar
 
 1. **Compilar el proyecto**:
 
