@@ -1,0 +1,324 @@
+### Comprehensive API Testing
+### This file contains test requests for all functional requirements from Requerimientos.md
+
+### Variables
+@baseUrl = http://localhost:5000
+@token = YOUR_JWT_TOKEN_HERE
+@userId = YOUR_USER_ID_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@incidentId = YOUR_INCIDENT_ID_HERE
+@sprintId = YOUR_SPRINT_ID_HERE
+@labelId = YOUR_LABEL_ID_HERE
+@backupId = YOUR_BACKUP_ID_HERE
+@attachmentId = YOUR_ATTACHMENT_ID_HERE
+
+### ========================================
+### RF1 - Gestión de Usuarios
+### ========================================
+
+### RF1.1 - Register new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "SecurePass123!",
+  "name": "Test User"
+}
+
+### RF1.1 - Login (Get JWT Token)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "SecurePass123!"
+}
+
+### RF1.1 - Get current user info
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### RF1.1 - Get all users
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+### RF1.1 - Get user by ID
+GET {{baseUrl}}/api/users/{{userId}}
+Authorization: Bearer {{token}}
+
+### RF1.1 - Get user by email
+GET {{baseUrl}}/api/users/by-email/testuser@example.com
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF2 - Gestión de Proyectos
+### ========================================
+
+### RF2.1 - Create new project
+POST {{baseUrl}}/api/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Project",
+  "code": "TST",
+  "description": "This is a test project for comprehensive testing"
+}
+
+### RF2.1 - Get all projects
+GET {{baseUrl}}/api/projects
+Authorization: Bearer {{token}}
+
+### RF2.1 - Get project by ID
+GET {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{token}}
+
+### RF2.1 - Get project by code
+GET {{baseUrl}}/api/projects/by-code/TST
+Authorization: Bearer {{token}}
+
+### RF2.1 - Update project
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test Project",
+  "description": "Updated description",
+  "isActive": true
+}
+
+### RF2.1 - Delete project
+DELETE {{baseUrl}}/api/projects/{{projectId}}
+Authorization: Bearer {{token}}
+
+### RF2.2 - Get project members
+GET {{baseUrl}}/api/projects/{{projectId}}/members
+Authorization: Bearer {{token}}
+
+### RF2.2 - Add member to project
+POST {{baseUrl}}/api/projects/{{projectId}}/members
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "roleId": 2
+}
+
+### RF2.2 - Remove member from project
+DELETE {{baseUrl}}/api/projects/{{projectId}}/members/{{userId}}
+Authorization: Bearer {{token}}
+
+### RF2.4 - Get project progress
+GET {{baseUrl}}/api/projects/{{projectId}}/progress
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF2.3 - Gestión de Sprints
+### ========================================
+
+### RF2.3 - Create sprint for project
+POST {{baseUrl}}/api/sprints/by-project/{{projectId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Sprint 1",
+  "startDate": "2025-10-22T00:00:00Z",
+  "endDate": "2025-11-05T00:00:00Z",
+  "goal": "Implement core features"
+}
+
+### RF2.3 - Get sprints by project
+GET {{baseUrl}}/api/sprints/by-project/{{projectId}}
+Authorization: Bearer {{token}}
+
+### RF2.3 - Get sprint by ID
+GET {{baseUrl}}/api/sprints/{{sprintId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF3 - Gestión de Incidencias
+### ========================================
+
+### RF3.1 - Create incident
+POST {{baseUrl}}/api/incidents
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectId": "{{projectId}}",
+  "sprintId": "{{sprintId}}",
+  "title": "Test Incident",
+  "description": "This is a test incident for comprehensive testing",
+  "severity": 2,
+  "priority": 2,
+  "assigneeId": "{{userId}}",
+  "storyPoints": 5,
+  "dueDate": "2025-11-01T00:00:00Z"
+}
+
+### RF3.1 - Get all incidents
+GET {{baseUrl}}/api/incidents
+Authorization: Bearer {{token}}
+
+### RF3.1 - Get incidents by project
+GET {{baseUrl}}/api/incidents?projectId={{projectId}}
+Authorization: Bearer {{token}}
+
+### RF3.1 - Get incidents by status
+GET {{baseUrl}}/api/incidents?status=0
+Authorization: Bearer {{token}}
+
+### RF3.1 - Get incident by ID
+GET {{baseUrl}}/api/incidents/{{incidentId}}
+Authorization: Bearer {{token}}
+
+### RF3.1 - Update incident
+PUT {{baseUrl}}/api/incidents/{{incidentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Incident Title",
+  "description": "Updated description",
+  "severity": 3,
+  "priority": 3,
+  "status": 1
+}
+
+### RF3.1 - Assign incident to user
+POST {{baseUrl}}/api/incidents/{{incidentId}}/assign/{{userId}}
+Authorization: Bearer {{token}}
+
+### RF3.1 - Close incident
+POST {{baseUrl}}/api/incidents/{{incidentId}}/close
+Authorization: Bearer {{token}}
+
+### RF3.4 - Get incident history
+GET {{baseUrl}}/api/incidents/{{incidentId}}/history
+Authorization: Bearer {{token}}
+
+### RF3.5 - Add comment to incident
+POST {{baseUrl}}/api/incidents/{{incidentId}}/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "body": "This is a test comment on the incident"
+}
+
+### RF3.5 - Get incident comments
+GET {{baseUrl}}/api/incidents/{{incidentId}}/comments
+Authorization: Bearer {{token}}
+
+### RF3.7 - Add label to incident
+POST {{baseUrl}}/api/incidents/{{incidentId}}/labels/{{labelId}}
+Authorization: Bearer {{token}}
+
+### RF3.7 - Remove label from incident
+DELETE {{baseUrl}}/api/incidents/{{incidentId}}/labels/{{labelId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.1 - Database Backup
+### ========================================
+
+### RF6.1 - Create database backup
+POST {{baseUrl}}/api/backup
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Manual backup before major update - Comprehensive test"
+}
+
+### Get all backups
+GET {{baseUrl}}/api/backup
+Authorization: Bearer {{token}}
+
+### Get specific backup
+GET {{baseUrl}}/api/backup/{{backupId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.2 - Database Restore
+### ========================================
+
+### RF6.2 - Restore database backup
+POST {{baseUrl}}/api/backup/restore
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "backupId": "{{backupId}}",
+  "notes": "Restoring from backup - Comprehensive test"
+}
+
+### ========================================
+### RF6.4 - Attachment Management
+### ========================================
+
+### RF6.4 - Upload attachment to incident
+POST {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+This is a test file content for attachment testing.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### RF6.4 - Get all attachments for incident
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+
+### RF6.4 - Get specific attachment info
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}
+Authorization: Bearer {{token}}
+
+### RF6.4 - Download attachment
+GET {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}/download
+Authorization: Bearer {{token}}
+
+### RF6.4 - Delete attachment
+DELETE {{baseUrl}}/api/incidents/{{incidentId}}/attachments/{{attachmentId}}
+Authorization: Bearer {{token}}
+
+### ========================================
+### RF6.5 - File Size Validation Test
+### ========================================
+
+### This will fail if file exceeds MaxFileSizeBytes (10MB by default)
+POST {{baseUrl}}/api/incidents/{{incidentId}}/attachments
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="large-file.zip"
+Content-Type: application/zip
+
+< ./path/to/large/file.zip
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Expected Response (if file too large):
+### {
+###   "error": "File size exceeds maximum allowed size of 10485760 bytes"
+### }
+
+### ========================================
+### Additional Tests
+### ========================================
+
+### Health check / Test endpoint
+GET {{baseUrl}}/api/test
+Authorization: Bearer {{token}}
+
+### Weather forecast test
+GET {{baseUrl}}/weatherforecast
+Authorization: Bearer {{token}}
