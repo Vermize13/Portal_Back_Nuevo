@@ -36,7 +36,7 @@ namespace API.Tests.Controllers
                 new User { Id = Guid.NewGuid(), Username = "user1", Email = "user1@test.com" },
                 new User { Id = Guid.NewGuid(), Username = "user2", Email = "user2@test.com" }
             };
-            _mockUserRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(users);
+            _mockUserRepository.Setup(x => x.GetAllUsersWithRolesAsync()).ReturnsAsync(users);
 
             // Act
             var result = await _controller.GetUsers();
@@ -60,7 +60,7 @@ namespace API.Tests.Controllers
                 Email = "test@test.com",
                 Name = "Test User"
             };
-            _mockUserRepository.Setup(x => x.GetAsync(userId)).ReturnsAsync(user);
+            _mockUserRepository.Setup(x => x.GetByIdWithRolesAsync(userId)).ReturnsAsync(user);
 
             // Act
             var result = await _controller.GetUser(userId);
@@ -79,7 +79,7 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockUserRepository.Setup(x => x.GetAsync(userId)).ReturnsAsync((User?)null);
+            _mockUserRepository.Setup(x => x.GetByIdWithRolesAsync(userId)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _controller.GetUser(userId);
@@ -125,6 +125,85 @@ namespace API.Tests.Controllers
 
             // Assert
             result.Result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Fact]
+        public async Task GetUsers_ReturnsUsersWithRoles()
+        {
+            // Arrange
+            var role1 = new Role { Id = Guid.NewGuid(), Code = "admin", Name = "Administrator" };
+            var role2 = new Role { Id = Guid.NewGuid(), Code = "user", Name = "User" };
+            
+            var user1 = new User 
+            { 
+                Id = Guid.NewGuid(), 
+                Username = "user1", 
+                Email = "user1@test.com",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { UserId = Guid.NewGuid(), RoleId = role1.Id, Role = role1 }
+                }
+            };
+            var user2 = new User 
+            { 
+                Id = Guid.NewGuid(), 
+                Username = "user2", 
+                Email = "user2@test.com",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { UserId = Guid.NewGuid(), RoleId = role2.Id, Role = role2 }
+                }
+            };
+            
+            var users = new List<User> { user1, user2 };
+            _mockUserRepository.Setup(x => x.GetAllUsersWithRolesAsync()).ReturnsAsync(users);
+
+            // Act
+            var result = await _controller.GetUsers();
+
+            // Assert
+            result.Result.Should().BeOfType<OkObjectResult>();
+            var okResult = result.Result as OkObjectResult;
+            var returnedUsers = okResult!.Value as IEnumerable<User>;
+            returnedUsers.Should().HaveCount(2);
+            
+            var usersList = returnedUsers!.ToList();
+            usersList[0].UserRoles.Should().HaveCount(1);
+            usersList[0].UserRoles.First().Role.Code.Should().Be("admin");
+            usersList[1].UserRoles.Should().HaveCount(1);
+            usersList[1].UserRoles.First().Role.Code.Should().Be("user");
+        }
+
+        [Fact]
+        public async Task GetUser_WithValidId_ReturnsUserWithRoles()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var role = new Role { Id = Guid.NewGuid(), Code = "admin", Name = "Administrator" };
+            var user = new User
+            {
+                Id = userId,
+                Username = "testuser",
+                Email = "test@test.com",
+                Name = "Test User",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { UserId = userId, RoleId = role.Id, Role = role }
+                }
+            };
+            _mockUserRepository.Setup(x => x.GetByIdWithRolesAsync(userId)).ReturnsAsync(user);
+
+            // Act
+            var result = await _controller.GetUser(userId);
+
+            // Assert
+            result.Result.Should().BeOfType<OkObjectResult>();
+            var okResult = result.Result as OkObjectResult;
+            var returnedUser = okResult!.Value as User;
+            returnedUser.Should().NotBeNull();
+            returnedUser!.Id.Should().Be(userId);
+            returnedUser.UserRoles.Should().HaveCount(1);
+            returnedUser.UserRoles.First().Role.Code.Should().Be("admin");
         }
     }
 }

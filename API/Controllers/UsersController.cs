@@ -25,7 +25,7 @@ namespace API.Controllers
         [ProducesResponseType(typeof(IEnumerable<User>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = await _userRepository.GetAllAsync();
+            var users = await _userRepository.GetAllUsersWithRolesAsync();
             return Ok(users);
         }
 
@@ -39,7 +39,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<User>> GetUser(Guid id)
         {
-            var user = await _userRepository.GetAsync(id);
+            var user = await _userRepository.GetByIdWithRolesAsync(id);
             if (user == null)
             {
                 return NotFound();
