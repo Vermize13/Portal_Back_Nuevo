@@ -31,12 +31,32 @@ namespace API.Tests.Controllers
         public async Task GetUsers_ReturnsOkWithUserList()
         {
             // Arrange
-            var users = new List<User>
-            {
-                new User { Id = Guid.NewGuid(), Username = "user1", Email = "user1@test.com" },
-                new User { Id = Guid.NewGuid(), Username = "user2", Email = "user2@test.com" }
+            var role1 = new Role { Id = Guid.NewGuid(), Code = "Admin", Name = "Administrator" };
+            var role2 = new Role { Id = Guid.NewGuid(), Code = "User", Name = "User" };
+            
+            var user1 = new User 
+            { 
+                Id = Guid.NewGuid(), 
+                Username = "user1", 
+                Email = "user1@test.com",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { RoleId = role1.Id, Role = role1, AssignedAt = DateTimeOffset.UtcNow }
+                }
             };
-            _mockUserRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(users);
+            var user2 = new User 
+            { 
+                Id = Guid.NewGuid(), 
+                Username = "user2", 
+                Email = "user2@test.com",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { RoleId = role2.Id, Role = role2, AssignedAt = DateTimeOffset.UtcNow }
+                }
+            };
+            
+            var users = new List<User> { user1, user2 };
+            _mockUserRepository.Setup(x => x.GetAllUsersWithRolesAsync()).ReturnsAsync(users);
 
             // Act
             var result = await _controller.GetUsers();
@@ -46,6 +66,7 @@ namespace API.Tests.Controllers
             var okResult = result.Result as OkObjectResult;
             var returnedUsers = okResult!.Value as IEnumerable<User>;
             returnedUsers.Should().HaveCount(2);
+            returnedUsers!.First().UserRoles.Should().HaveCount(1);
         }
 
         [Fact]
@@ -53,14 +74,19 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var role = new Role { Id = Guid.NewGuid(), Code = "Admin", Name = "Administrator" };
             var user = new User
             {
                 Id = userId,
                 Username = "testuser",
                 Email = "test@test.com",
-                Name = "Test User"
+                Name = "Test User",
+                UserRoles = new List<UserRole>
+                {
+                    new UserRole { UserId = userId, RoleId = role.Id, Role = role, AssignedAt = DateTimeOffset.UtcNow }
+                }
             };
-            _mockUserRepository.Setup(x => x.GetAsync(userId)).ReturnsAsync(user);
+            _mockUserRepository.Setup(x => x.GetByIdWithRolesAsync(userId)).ReturnsAsync(user);
 
             // Act
             var result = await _controller.GetUser(userId);
@@ -72,6 +98,7 @@ namespace API.Tests.Controllers
             returnedUser.Should().NotBeNull();
             returnedUser!.Id.Should().Be(userId);
             returnedUser.Username.Should().Be("testuser");
+            returnedUser.UserRoles.Should().HaveCount(1);
         }
 
         [Fact]
@@ -79,7 +106,7 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockUserRepository.Setup(x => x.GetAsync(userId)).ReturnsAsync((User?)null);
+            _mockUserRepository.Setup(x => x.GetByIdWithRolesAsync(userId)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _controller.GetUser(userId);
