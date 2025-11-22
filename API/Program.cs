@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using API.DTOs;
 using API.Services;
+using API.Middleware;
 using Resend;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entity;
@@ -206,6 +207,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Enable HTTP request auditing
+app.UseHttpAuditing();
 
 app.MapControllers();
 

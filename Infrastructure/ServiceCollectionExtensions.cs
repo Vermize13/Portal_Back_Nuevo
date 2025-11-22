@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Domain;
 
 namespace Infrastructure
@@ -8,9 +9,14 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
         {
-            services.AddDbContext<BugMgrDbContext>(options =>
+            // Register the SQL command interceptor
+            services.AddSingleton<SqlCommandAuditInterceptor>();
+
+            services.AddDbContext<BugMgrDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsql(connectionString);
+                var interceptor = serviceProvider.GetRequiredService<SqlCommandAuditInterceptor>();
+                options.UseNpgsql(connectionString)
+                       .AddInterceptors(interceptor);
             });
 
             return services;

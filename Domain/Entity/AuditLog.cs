@@ -15,5 +15,15 @@ namespace Domain.Entity
         public string? UserAgent { get; set; }
         public string? DetailsJson { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        
+        // HTTP Request specific fields
+        public string? HttpMethod { get; set; }
+        public string? HttpPath { get; set; }
+        public int? HttpStatusCode { get; set; }
+        public long? DurationMs { get; set; }
+        
+        // SQL Command specific fields
+        public string? SqlCommand { get; set; }
+        public string? SqlParameters { get; set; }
     }
 }
