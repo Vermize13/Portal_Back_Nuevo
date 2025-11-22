@@ -23,7 +23,7 @@ namespace API.DTOs
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
         public DateTimeOffset? ClosedAt { get; set; }
-        public List<LabelInfo> Labels { get; set; } = new();
+        public LabelInfo[] Labels { get; set; } = Array.Empty<LabelInfo>();
         public int CommentCount { get; set; }
         public int AttachmentCount { get; set; }
     }

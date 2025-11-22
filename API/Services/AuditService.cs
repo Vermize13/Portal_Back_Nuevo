@@ -111,7 +111,7 @@ namespace API.Services
 
             return new AuditLogPagedResponse
             {
-                Logs = logResponses,
+                Logs = logResponses.ToArray(),
                 TotalCount = totalCount,
                 Page = filter.Page,
                 PageSize = filter.PageSize,

@@ -667,7 +667,7 @@ namespace API.Controllers
                     Id = il.LabelId,
                     Name = il.Label?.Name ?? "",
                     ColorHex = il.Label?.ColorHex
-                }).ToList() ?? new List<LabelInfo>(),
+                }).ToArray() ?? Array.Empty<LabelInfo>(),
                 CommentCount = incident.Comments?.Count ?? 0,
                 AttachmentCount = attachmentCount
             };

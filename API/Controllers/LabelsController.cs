@@ -115,7 +115,7 @@ namespace API.Controllers
                 ProjectId = l.ProjectId,
                 Name = l.Name,
                 ColorHex = l.ColorHex
-            });
+            }).ToArray();
 
             return Ok(response);
         }

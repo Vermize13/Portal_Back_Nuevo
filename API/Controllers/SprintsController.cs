@@ -51,7 +51,7 @@ namespace API.Controllers
             }
 
             var sprints = await _sprintRepository.GetByProjectIdAsync(projectId);
-            return Ok(sprints);
+            return Ok(sprints.ToArray());
         }
 
         /// <summary>

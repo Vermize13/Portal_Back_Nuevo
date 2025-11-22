@@ -47,7 +47,7 @@ namespace API.DTOs
     /// </summary>
     public class AuditLogPagedResponse
     {
-        public List<AuditLogResponse> Logs { get; set; } = new();
+        public AuditLogResponse[] Logs { get; set; } = Array.Empty<AuditLogResponse>();
         public int TotalCount { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
