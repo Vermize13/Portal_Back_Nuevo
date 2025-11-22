@@ -32,5 +32,45 @@ namespace API.Services
             _context.AuditLogs.Add(auditLog);
             await _context.SaveChangesAsync();
         }
+
+        public async Task LogHttpRequestAsync(Guid? actorId, string httpMethod, string httpPath, int statusCode, long durationMs, string? ipAddress, string? userAgent, Guid? requestId)
+        {
+            var auditLog = new AuditLog
+            {
+                Id = Guid.NewGuid(),
+                Action = AuditAction.HttpRequest,
+                ActorId = actorId,
+                RequestId = requestId ?? Guid.NewGuid(),
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                HttpMethod = httpMethod,
+                HttpPath = httpPath,
+                HttpStatusCode = statusCode,
+                DurationMs = durationMs,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogSqlCommandAsync(string sqlCommand, string? sqlParameters, long durationMs)
+        {
+            // Note: This method is designed to be called from a background service/queue
+            // to avoid recursion issues. Direct calls from SQL interceptor should be avoided.
+            // The SQL interceptor currently logs to the application logger only.
+            var auditLog = new AuditLog
+            {
+                Id = Guid.NewGuid(),
+                Action = AuditAction.SqlCommand,
+                SqlCommand = sqlCommand,
+                SqlParameters = sqlParameters,
+                DurationMs = durationMs,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+        }
     }
 }
