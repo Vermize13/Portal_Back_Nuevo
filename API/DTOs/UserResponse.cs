@@ -12,7 +12,7 @@ namespace API.DTOs
         public bool IsActive { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
-        public List<RoleInfo> Roles { get; set; } = new();
+        public RoleInfo[] Roles { get; set; } = Array.Empty<RoleInfo>();
     }
 
     public class RoleInfo

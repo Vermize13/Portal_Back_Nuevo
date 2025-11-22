@@ -37,7 +37,7 @@ namespace API.Controllers
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt,
-                Roles = u.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToList() ?? new List<RoleInfo>()
+                Roles = u.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>(),
             }).ToArray();
 
             return Ok(response);
@@ -68,7 +68,7 @@ namespace API.Controllers
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToList() ?? new List<RoleInfo>()
+                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>()
             };
 
             return Ok(response);
@@ -103,7 +103,7 @@ namespace API.Controllers
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToList() ?? new List<RoleInfo>()
+                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>()
             };
 
             return Ok(response);
