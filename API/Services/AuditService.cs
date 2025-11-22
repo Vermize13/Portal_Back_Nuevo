@@ -56,6 +56,9 @@ namespace API.Services
 
         public async Task LogSqlCommandAsync(string sqlCommand, string? sqlParameters, long durationMs)
         {
+            // Note: This method is designed to be called from a background service/queue
+            // to avoid recursion issues. Direct calls from SQL interceptor should be avoided.
+            // The SQL interceptor currently logs to the application logger only.
             var auditLog = new AuditLog
             {
                 Id = Guid.NewGuid(),

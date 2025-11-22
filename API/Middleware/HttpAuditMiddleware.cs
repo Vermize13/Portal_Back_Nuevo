@@ -70,6 +70,8 @@ namespace API.Middleware
                     var durationMs = stopwatch.ElapsedMilliseconds;
 
                     // Log the HTTP request asynchronously without blocking the response
+                    // Note: Task.Run is used for simplicity. For high-traffic applications,
+                    // consider using a background service with a queue to avoid thread pool exhaustion
                     _ = Task.Run(async () =>
                     {
                         try

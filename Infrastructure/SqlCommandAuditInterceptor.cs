@@ -105,13 +105,10 @@ namespace Infrastructure
                 var parametersJson = parameters.Count > 0 ? JsonSerializer.Serialize(parameters) : null;
 
                 // Log to standard logger for immediate visibility
+                // Database persistence of SQL audits should be implemented using a background
+                // service with a queue to avoid recursion and performance issues
                 _logger?.LogInformation("SQL Command: {Command}, Parameters: {Parameters}", 
                     commandText, parametersJson ?? "None");
-
-                // Store for potential database auditing
-                // Note: Actual database logging would need to be done outside the interceptor
-                // to avoid recursion issues. This can be handled by a background service
-                // that reads from a queue or using a separate database connection.
             }
             catch (Exception ex)
             {
@@ -120,7 +117,9 @@ namespace Infrastructure
         }
 
         /// <summary>
-        /// Suppress audit logging temporarily (used when inserting audit logs)
+        /// Suppress audit logging temporarily (used when inserting audit logs).
+        /// This is for future use when SQL audit logs are persisted to the database.
+        /// Usage: using (SqlCommandAuditInterceptor.SuppressAudit()) { ... }
         /// </summary>
         public static IDisposable SuppressAudit()
         {
