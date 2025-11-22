@@ -35,10 +35,10 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Crea una nueva etiqueta para un proyecto
+        /// Creates a new label for a project
         /// </summary>
-        /// <param name="request">Datos de la etiqueta</param>
-        /// <returns>Etiqueta creada</returns>
+        /// <param name="request">Label data</param>
+        /// <returns>Created label</returns>
         [HttpPost]
         [ProducesResponseType(typeof(LabelResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -91,10 +91,10 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Obtiene todas las etiquetas de un proyecto
+        /// Gets all labels for a project
         /// </summary>
-        /// <param name="projectId">ID del proyecto</param>
-        /// <returns>Lista de etiquetas del proyecto</returns>
+        /// <param name="projectId">Project ID</param>
+        /// <returns>List of project labels</returns>
         [HttpGet("project/{projectId}")]
         [ProducesResponseType(typeof(IEnumerable<LabelResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
