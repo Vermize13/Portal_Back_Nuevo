@@ -88,9 +88,16 @@ namespace API.Controllers
             if (reporterId.HasValue)
                 query = query.Where(i => i.ReporterId == reporterId.Value);
 
-            var incidents = await query.OrderByDescending(i => i.CreatedAt).ToListAsync();
+            var incidents = await query.OrderByDescending(i => i.CreatedAt).ToArrayAsync();
 
-            var response = incidents.Select(i => MapToResponse(i)).ToList();
+            // Load project names for all involved project ids in one query
+            var projectIds = incidents.Select(i => i.ProjectId).Distinct().ToList();
+            var projects = await _context.Projects
+                .Where(p => projectIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.Name })
+                .ToDictionaryAsync(p => p.Id, p => p.Name);
+
+            var response = incidents.Select(i => MapToResponse(i, projects)).ToArray();
 
             return Ok(response);
         }
@@ -115,7 +122,12 @@ namespace API.Controllers
             if (incident == null)
                 return NotFound();
 
-            return Ok(MapToResponse(incident));
+            var projectName = await _context.Projects
+                .Where(p => p.Id == incident.ProjectId)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync() ?? string.Empty;
+
+            return Ok(MapToResponse(incident, new Dictionary<Guid, string> { { incident.ProjectId, projectName } }));
         }
 
         /// <summary>
@@ -287,28 +299,28 @@ namespace API.Controllers
                 }
             }
 
-            if (request.SprintId != incident.SprintId)
+            if (request.SprintId.HasValue && request.SprintId != incident.SprintId)
             {
                 await TrackChange(id, userId, "SprintId", incident.SprintId?.ToString(), request.SprintId?.ToString());
                 incident.SprintId = request.SprintId;
                 changes.Add("SprintId");
             }
 
-            if (request.AssigneeId != incident.AssigneeId)
+            if (request.AssigneeId.HasValue && request.AssigneeId != incident.AssigneeId)
             {
                 await TrackChange(id, userId, "AssigneeId", incident.AssigneeId?.ToString(), request.AssigneeId?.ToString());
                 incident.AssigneeId = request.AssigneeId;
                 changes.Add("AssigneeId");
             }
 
-            if (request.StoryPoints != incident.StoryPoints)
+            if (request.StoryPoints.HasValue && request.StoryPoints != incident.StoryPoints)
             {
                 await TrackChange(id, userId, "StoryPoints", incident.StoryPoints?.ToString(), request.StoryPoints?.ToString());
                 incident.StoryPoints = request.StoryPoints;
                 changes.Add("StoryPoints");
             }
 
-            if (request.DueDate != incident.DueDate)
+            if (request.DueDate.HasValue && request.DueDate != incident.DueDate)
             {
                 await TrackChange(id, userId, "DueDate", incident.DueDate?.ToString(), request.DueDate?.ToString());
                 incident.DueDate = request.DueDate;
@@ -454,7 +466,7 @@ namespace API.Controllers
                 .Include(h => h.ChangedByUser)
                 .Where(h => h.IncidentId == id)
                 .OrderByDescending(h => h.ChangedAt)
-                .ToListAsync();
+                .ToArrayAsync();
 
             return Ok(history);
         }
@@ -521,7 +533,7 @@ namespace API.Controllers
                 .Include(c => c.Author)
                 .Where(c => c.IncidentId == id)
                 .OrderBy(c => c.CreatedAt)
-                .ToListAsync();
+                .ToArrayAsync();
 
             return Ok(comments);
         }
@@ -614,15 +626,26 @@ namespace API.Controllers
         }
 
         // Helper methods
-        private IncidentResponse MapToResponse(Incident incident)
+        private IncidentResponse MapToResponse(Incident incident, Dictionary<Guid, string>? projectNames = null)
         {
             // Count attachments for this incident
             var attachmentCount = _context.Attachments.Count(a => a.IncidentId == incident.Id);
+
+            string projectName = string.Empty;
+            if (projectNames != null)
+            {
+                projectNames.TryGetValue(incident.ProjectId, out projectName);
+            }
+            else
+            {
+                projectName = _context.Projects.Where(p => p.Id == incident.ProjectId).Select(p => p.Name).FirstOrDefault() ?? string.Empty;
+            }
 
             return new IncidentResponse
             {
                 Id = incident.Id,
                 ProjectId = incident.ProjectId,
+                ProjectName = projectName ?? string.Empty,
                 SprintId = incident.SprintId,
                 Code = incident.Code,
                 Title = incident.Title,
@@ -652,11 +675,20 @@ namespace API.Controllers
 
         private Task TrackChange(Guid incidentId, Guid userId, string fieldName, string? oldValue, string? newValue)
         {
+            // Validate ChangedByUser exists
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                _logger.LogWarning($"User with ID {userId} does not exist. Using system user ID for IncidentHistory.");
+                userId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"); // Default system user ID
+            }
+
             var history = new IncidentHistory
             {
                 Id = Guid.NewGuid(),
                 IncidentId = incidentId,
                 ChangedBy = userId,
+                ChangedByUser = user,
                 FieldName = fieldName,
                 OldValue = oldValue,
                 NewValue = newValue,

@@ -6,6 +6,7 @@ namespace API.DTOs
     {
         public Guid Id { get; set; }
         public Guid ProjectId { get; set; }
+        public string ProjectName { get; set; } = default!;
         public Guid? SprintId { get; set; }
         public string Code { get; set; } = default!;
         public string Title { get; set; } = default!;

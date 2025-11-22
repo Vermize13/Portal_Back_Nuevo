@@ -7,11 +7,17 @@ using System.Text;
 using API.DTOs;
 using API.Services;
 using Resend;
+using Microsoft.EntityFrameworkCore;
+using Domain.Entity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
 
 // Add Swagger/OpenAPI configuration with JWT support
 builder.Services.AddEndpointsApiExplorer();
@@ -128,6 +134,60 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Seed admin user at startup if not present
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<BugMgrDbContext>();
+        // Ensure database exists and migrations applied in deployed flows; here we assume migrations are applied
+
+        // Read admin credentials from configuration or environment variables
+        var config = services.GetRequiredService<IConfiguration>();
+        var adminUserName = config["Admin:Username"] ?? Environment.GetEnvironmentVariable("ADMIN_USERNAME") ?? "admin";
+        var adminEmail = config["Admin:Email"] ?? Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "admin@example.com";
+        var adminPassword = config["Admin:Password"] ?? Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "AdminPassword123!";
+
+        // Admin role id seeded via migration
+        var adminRoleId = System.Guid.Parse("42ea4380-49d1-4307-9a97-4673cc00faff");
+
+        if (!db.Users.Any(u => u.Username == adminUserName))
+        {
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword);
+
+            var adminId = System.Guid.Parse("cbce9a2f-1894-459b-9b34-0dc29e6e977e");
+
+            var adminUser = new User
+            {
+                Id = adminId,
+                Name = "Administrator",
+                Email = adminEmail,
+                Username = adminUserName,
+                PasswordHash = passwordHash,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            db.Users.Add(adminUser);
+            db.UserRoles.Add(new UserRole
+            {
+                UserId = adminId,
+                RoleId = adminRoleId,
+                AssignedAt = DateTimeOffset.UtcNow
+            });
+
+            db.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
+        logger?.LogError(ex, "Error seeding admin user");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
