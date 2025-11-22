@@ -3,6 +3,8 @@ using Domain.Entity;
 using FluentAssertions;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using Repository.Repositories;
 using Xunit;
 
 namespace API.Tests.Services
@@ -11,6 +13,7 @@ namespace API.Tests.Services
     {
         private readonly BugMgrDbContext _context;
         private readonly AuditService _auditService;
+        private readonly Mock<IAuditLogRepository> _mockAuditLogRepository;
 
         public AuditServiceTests()
         {
@@ -19,7 +22,8 @@ namespace API.Tests.Services
                 .Options;
 
             _context = new BugMgrDbContext(options);
-            _auditService = new AuditService(_context);
+            _mockAuditLogRepository = new Mock<IAuditLogRepository>();
+            _auditService = new AuditService(_context, _mockAuditLogRepository.Object);
         }
 
         [Fact]
