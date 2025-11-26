@@ -8,7 +8,7 @@ namespace Repository.Repositories
     {
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByUsernameAsync(string username);
-        Task<User?> GetByIdWithRolesAsync(Guid id);
+        Task<User?> GetByIdWithRoleAsync(Guid id);
         Task<IEnumerable<User>> GetAllActiveUsersAsync();
         Task<IEnumerable<User>> GetAllUsersWithRolesAsync();
     }
@@ -27,11 +27,10 @@ namespace Repository.Repositories
             return _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public Task<User?> GetByIdWithRolesAsync(Guid id)
+        public Task<User?> GetByIdWithRoleAsync(Guid id)
         {
             return _context.Users
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
@@ -43,8 +42,7 @@ namespace Repository.Repositories
         public async Task<IEnumerable<User>> GetAllUsersWithRolesAsync()
         {
             return await _context.Users
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+                .Include(u => u.Role)
                 .ToListAsync();
         }
     }

@@ -170,17 +170,11 @@ using (var scope = app.Services.CreateScope())
                 PasswordHash = passwordHash,
                 IsActive = true,
                 CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
+                UpdatedAt = DateTimeOffset.UtcNow,
+                RoleId = adminRoleId
             };
 
             db.Users.Add(adminUser);
-            db.UserRoles.Add(new UserRole
-            {
-                UserId = adminId,
-                RoleId = adminRoleId,
-                AssignedAt = DateTimeOffset.UtcNow
-            });
-
             db.SaveChanges();
         }
     }

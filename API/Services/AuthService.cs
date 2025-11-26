@@ -25,10 +25,9 @@ namespace API.Services
 
         public async Task<AuthResponse?> LoginAsync(LoginRequest request, string ipAddress, string userAgent)
         {
-            // Find user with roles
+            // Find user with role
             var user = await _context.Users
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null || !user.IsActive)
@@ -38,8 +37,8 @@ namespace API.Services
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return null;
 
-            var roles = user.UserRoles.Select(ur => ur.Role.Code).ToList();
-            var token = GenerateJwtToken(user.Id, user.Username, roles);
+            var role = user.Role?.Code;
+            var token = GenerateJwtToken(user.Id, user.Username, role);
             
             // Log the login action
             await _auditService.LogAsync(AuditAction.Login, user.Id, null, null, ipAddress, userAgent, new { username = user.Username });
@@ -49,7 +48,7 @@ namespace API.Services
                 Token = token,
                 Username = user.Username,
                 Email = user.Email,
-                Roles = roles,
+                Role = role,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes)
             };
         }
@@ -63,7 +62,10 @@ namespace API.Services
             // Hash password
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            // Create user
+            // Get default role (Developer) if it exists
+            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Code == "Developer");
+
+            // Create user with single role
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -73,43 +75,30 @@ namespace API.Services
                 PasswordHash = passwordHash,
                 IsActive = true,
                 CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
+                UpdatedAt = DateTimeOffset.UtcNow,
+                RoleId = defaultRole?.Id
             };
 
             _context.Users.Add(user);
-
-            // Assign default role (Developer) if it exists
-            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Code == "Developer");
-            if (defaultRole != null)
-            {
-                var userRole = new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = defaultRole.Id,
-                    AssignedAt = DateTimeOffset.UtcNow
-                };
-                _context.UserRoles.Add(userRole);
-            }
-
             await _context.SaveChangesAsync();
 
             // Log the create action
             await _auditService.LogAsync(AuditAction.Create, user.Id, "User", user.Id, ipAddress, userAgent, new { username = user.Username });
 
-            var roles = defaultRole != null ? new List<string> { defaultRole.Code } : new List<string>();
-            var token = GenerateJwtToken(user.Id, user.Username, roles);
+            var role = defaultRole?.Code;
+            var token = GenerateJwtToken(user.Id, user.Username, role);
 
             return new AuthResponse
             {
                 Token = token,
                 Username = user.Username,
                 Email = user.Email,
-                Roles = roles,
+                Role = role,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes)
             };
         }
 
-        public string GenerateJwtToken(Guid userId, string username, List<string> roles)
+        public string GenerateJwtToken(Guid userId, string username, string? role)
         {
             var claims = new List<Claim>
             {
@@ -118,8 +107,8 @@ namespace API.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            // Add role claims
-            foreach (var role in roles)
+            // Add role claim if user has a role
+            if (!string.IsNullOrEmpty(role))
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }

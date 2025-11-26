@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "BugMgr API",
-    "description": "API para gestión de incidencias y proyectos - Sistema de gestión de bugs con autenticación JWT",
+    "description": "API para gesti\u00f3n de incidencias y proyectos - Sistema de gesti\u00f3n de bugs con autenticaci\u00f3n JWT",
     "contact": {
       "name": "Portal_Back_Nuevo Team"
     },
@@ -3745,7 +3745,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": { }
+        "additionalProperties": {}
       },
       "Project": {
         "type": "object",
@@ -4149,12 +4149,13 @@
             "type": "string",
             "format": "date-time"
           },
-          "userRoles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserRole"
-            },
+          "roleId": {
+            "type": "string",
+            "format": "uuid",
             "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
           }
         },
         "additionalProperties": false
@@ -4189,36 +4190,8 @@
             "type": "string",
             "format": "date-time"
           },
-          "roles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RoleInfo"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UserRole": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          },
-          "roleId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "role": {
-            "$ref": "#/components/schemas/Role"
-          },
-          "assignedAt": {
-            "type": "string",
-            "format": "date-time"
+            "$ref": "#/components/schemas/RoleInfo"
           }
         },
         "additionalProperties": false
@@ -4258,7 +4231,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }

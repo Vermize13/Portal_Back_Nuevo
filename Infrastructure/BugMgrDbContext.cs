@@ -13,7 +13,6 @@ namespace Infrastructure
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Role> Roles => Set<Role>();
-        public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<Project> Projects => Set<Project>();
         public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
         public DbSet<Sprint> Sprints => Set<Sprint>();
@@ -36,7 +35,6 @@ namespace Infrastructure
             NpgsqlModelBuilderExtensions.HasPostgresEnum<NotificationChannel>(b);
             NpgsqlModelBuilderExtensions.HasPostgresEnum<AuditAction>(b);
 
-            b.Entity<UserRole>().HasKey(x => new { x.UserId, x.RoleId });
             b.Entity<ProjectMember>().HasKey(x => new { x.ProjectId, x.UserId });
             b.Entity<IncidentLabel>().HasKey(x => new { x.IncidentId, x.LabelId });
 
@@ -54,6 +52,13 @@ namespace Infrastructure
                 .WithMany()
                 .HasForeignKey(a => a.UploadedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // User-Role 1:N relationship
+            b.Entity<User>()
+                .HasOne(u => u.Role)
+                .WithMany()
+                .HasForeignKey(u => u.RoleId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             b.Entity<User>().Property(x => x.Email).IsRequired();
             b.Entity<User>().Property(x => x.Username).IsRequired();

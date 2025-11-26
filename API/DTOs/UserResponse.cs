@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace API.DTOs
 {
@@ -12,7 +11,7 @@ namespace API.DTOs
         public bool IsActive { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
-        public RoleInfo[] Roles { get; set; } = Array.Empty<RoleInfo>();
+        public RoleInfo? Role { get; set; }
     }
 
     public class RoleInfo

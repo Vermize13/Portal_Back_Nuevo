@@ -45,7 +45,7 @@ namespace API.Tests.Controllers
                 Token = "valid-jwt-token",
                 Username = "testuser",
                 Email = "testuser@test.com",
-                Roles = new List<string> { "User" },
+                Role = "User",
                 ExpiresAt = DateTime.UtcNow.AddHours(1)
             };
             _mockAuthService.Setup(x => x.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -95,7 +95,7 @@ namespace API.Tests.Controllers
                 Token = "valid-jwt-token",
                 Username = "newuser",
                 Email = "newuser@test.com",
-                Roles = new List<string> { "User" },
+                Role = "User",
                 ExpiresAt = DateTime.UtcNow.AddHours(1)
             };
             _mockAuthService.Setup(x => x.RegisterAsync(It.IsAny<RegisterRequest>(), It.IsAny<string>(), It.IsAny<string>()))
