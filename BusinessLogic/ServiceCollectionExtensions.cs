@@ -12,7 +12,6 @@ namespace BusinessLogic
             // Register repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IAuditLogRepository, AuditLogRepository>();

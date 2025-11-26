@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Domain.Entity
 {
@@ -13,6 +12,9 @@ namespace Domain.Entity
         public bool IsActive { get; set; } = true;
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
-        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        
+        // Single role per user (1:N relationship)
+        public Guid? RoleId { get; set; }
+        public Role? Role { get; set; }
     }
 }

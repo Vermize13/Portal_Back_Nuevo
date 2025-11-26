@@ -5,7 +5,7 @@ namespace API.DTOs
         public string Token { get; set; } = default!;
         public string Username { get; set; } = default!;
         public string Email { get; set; } = default!;
-        public List<string> Roles { get; set; } = new();
+        public string? Role { get; set; }
         public DateTime ExpiresAt { get; set; }
     }
 }
