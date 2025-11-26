@@ -5,5 +5,6 @@ namespace API.DTOs
         public string ResendApiKey { get; set; } = default!;
         public string FromEmail { get; set; } = default!;
         public string FromName { get; set; } = default!;
+        public string FrontendUrl { get; set; } = "http://localhost:4200";
     }
 }
