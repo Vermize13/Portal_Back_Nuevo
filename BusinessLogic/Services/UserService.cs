@@ -17,6 +17,7 @@ namespace BusinessLogic.Services
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<IEnumerable<UserDto>> GetActiveUsersAsync();
         Task AssignRoleAsync(Guid userId, Guid roleId, Guid? actorId = null);
+        Task ClearRoleAsync(Guid userId, Guid? actorId = null);
         Task UpdatePasswordAsync(Guid userId, UpdatePasswordDto dto, Guid? actorId = null);
         Task UpdateProfileAsync(Guid userId, UpdateUserDto dto);
     }
@@ -248,7 +249,7 @@ namespace BusinessLogic.Services
                 throw new InvalidOperationException("Role not found");
             }
 
-            // Assign single role to user
+            // Assign single role to user (replaces any existing role)
             user.RoleId = roleId;
             user.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -262,6 +263,33 @@ namespace BusinessLogic.Services
                 nameof(User),
                 user.Id,
                 new { UserId = userId, RoleId = roleId, RoleName = role.Name }
+            );
+        }
+
+        public async Task ClearRoleAsync(Guid userId, Guid? actorId = null)
+        {
+            var user = await _userRepository.GetByIdWithRoleAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            var previousRoleName = user.Role?.Name;
+
+            // Clear the user's role
+            user.RoleId = null;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            _userRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Audit log
+            await _auditService.LogAsync(
+                AuditAction.Update,
+                actorId,
+                nameof(User),
+                user.Id,
+                new { Action = "ClearRole", UserId = userId, PreviousRole = previousRoleName }
             );
         }
 

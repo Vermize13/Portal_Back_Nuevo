@@ -5,7 +5,12 @@ using System;
 
 namespace Infrastructure.Migrations
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Migration to simplify User-Role relationship from N:N to 1:N.
+    /// Data Migration Strategy: For users with multiple roles, the first role assigned 
+    /// (based on AssignedAt timestamp) is preserved. This ensures predictable behavior 
+    /// during migration while maintaining backward compatibility.
+    /// </summary>
     public partial class SimplifyUserRoleRelationship : Migration
     {
         /// <inheritdoc />
@@ -18,7 +23,8 @@ namespace Infrastructure.Migrations
                 type: "uuid",
                 nullable: true);
 
-            // Migrate data: For each user, take their first role from UserRoles
+            // Migrate data: For each user, take their first (earliest assigned) role from UserRoles.
+            // If a user had multiple roles, only the first one is preserved.
             migrationBuilder.Sql(@"
                 UPDATE ""Users"" u
                 SET ""RoleId"" = (
