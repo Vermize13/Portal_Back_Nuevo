@@ -26,6 +26,7 @@ namespace Infrastructure
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<Backup> Backups => Set<Backup>();
         public DbSet<Restore> Restores => Set<Restore>();
+        public DbSet<UserInvitation> UserInvitations => Set<UserInvitation>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -63,6 +64,25 @@ namespace Infrastructure
             b.Entity<User>().Property(x => x.Email).IsRequired();
             b.Entity<User>().Property(x => x.Username).IsRequired();
             b.Entity<Project>().Property(x => x.Name).IsRequired();
+
+            // UserInvitation configuration
+            b.Entity<UserInvitation>()
+                .HasOne(i => i.Role)
+                .WithMany()
+                .HasForeignKey(i => i.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<UserInvitation>()
+                .HasOne(i => i.InvitedByUser)
+                .WithMany()
+                .HasForeignKey(i => i.InvitedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<UserInvitation>().Property(x => x.Email).IsRequired();
+            b.Entity<UserInvitation>().Property(x => x.FullName).IsRequired();
+            b.Entity<UserInvitation>().Property(x => x.Token).IsRequired();
+            b.Entity<UserInvitation>().HasIndex(x => x.Token).IsUnique();
+            b.Entity<UserInvitation>().HasIndex(x => x.Email);
 
             base.OnModelCreating(b);
         }

@@ -107,6 +107,7 @@ builder.Services.AddBusinessLogicServices();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
 builder.Services.Configure<BackupSettings>(builder.Configuration.GetSection("BackupSettings"));
+builder.Services.Configure<InvitationSettings>(builder.Configuration.GetSection("InvitationSettings"));
 
 // Register Resend email service
 var resendApiKey = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>()?.ResendApiKey ?? "";
@@ -123,6 +124,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IIncidentHistoryService, IncidentHistoryService>();
+builder.Services.AddScoped<IInvitationService, InvitationService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
