@@ -30,7 +30,7 @@ namespace API.Services
 
         private string GetIncidentUrl(Guid projectId, Guid incidentId)
         {
-            var baseUrl = _emailSettings.FrontendUrl.TrimEnd('/');
+            var baseUrl = (_emailSettings.FrontendUrl ?? "http://localhost:4200").TrimEnd('/');
             return $"{baseUrl}/projects/{projectId}/incidents/{incidentId}";
         }
 
