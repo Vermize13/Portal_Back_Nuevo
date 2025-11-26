@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "Code", "Description", "Name" },
                 values: new object[]
                 {
-                    new Guid("55555555-5555-5555-5555-555555555555"), "LiderTecnico", "Technical lead role", "Lider Tecnico"
+                    new Guid("55555555-5555-5555-5555-555555555555"), "LiderTecnico", "Technical lead role", "Líder Técnico"
                 });
 
             // Create UserInvitations table
