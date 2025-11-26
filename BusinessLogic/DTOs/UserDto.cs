@@ -9,7 +9,7 @@ namespace BusinessLogic.DTOs
         public bool IsActive { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
-        public List<RoleDto> Roles { get; set; } = new();
+        public RoleDto? Role { get; set; }
     }
 
     public class RoleDto

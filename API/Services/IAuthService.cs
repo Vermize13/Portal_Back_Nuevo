@@ -6,6 +6,6 @@ namespace API.Services
     {
         Task<AuthResponse?> LoginAsync(LoginRequest request, string ipAddress, string userAgent);
         Task<AuthResponse?> RegisterAsync(RegisterRequest request, string ipAddress, string userAgent);
-        string GenerateJwtToken(Guid userId, string username, List<string> roles);
+        string GenerateJwtToken(Guid userId, string username, string? role);
     }
 }

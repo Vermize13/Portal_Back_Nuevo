@@ -37,7 +37,7 @@ namespace API.Controllers
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt,
-                Roles = u.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>(),
+                Role = u.Role != null ? new RoleInfo { Id = u.Role.Id, Code = u.Role.Code, Name = u.Role.Name } : null,
             }).ToArray();
 
             return Ok(response);
@@ -53,7 +53,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserResponse>> GetUser(Guid id)
         {
-            var user = await _userRepository.GetByIdWithRolesAsync(id);
+            var user = await _userRepository.GetByIdWithRoleAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -68,7 +68,7 @@ namespace API.Controllers
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>()
+                Role = user.Role != null ? new RoleInfo { Id = user.Role.Id, Code = user.Role.Code, Name = user.Role.Name } : null
             };
 
             return Ok(response);
@@ -90,7 +90,7 @@ namespace API.Controllers
                 return NotFound();
             }
 
-            var user = await _userRepository.GetByIdWithRolesAsync(userBasic.Id);
+            var user = await _userRepository.GetByIdWithRoleAsync(userBasic.Id);
             if (user == null)
                 return NotFound();
 
@@ -103,7 +103,7 @@ namespace API.Controllers
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                Roles = user.UserRoles?.Select(ur => new RoleInfo { Id = ur.Role.Id, Code = ur.Role.Code, Name = ur.Role.Name }).ToArray() ?? Array.Empty<RoleInfo>()
+                Role = user.Role != null ? new RoleInfo { Id = user.Role.Id, Code = user.Role.Code, Name = user.Role.Name } : null
             };
 
             return Ok(response);

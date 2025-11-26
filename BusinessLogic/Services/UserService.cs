@@ -17,7 +17,7 @@ namespace BusinessLogic.Services
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<IEnumerable<UserDto>> GetActiveUsersAsync();
         Task AssignRoleAsync(Guid userId, Guid roleId, Guid? actorId = null);
-        Task RemoveRoleAsync(Guid userId, Guid roleId, Guid? actorId = null);
+        Task ClearRoleAsync(Guid userId, Guid? actorId = null);
         Task UpdatePasswordAsync(Guid userId, UpdatePasswordDto dto, Guid? actorId = null);
         Task UpdateProfileAsync(Guid userId, UpdateUserDto dto);
     }
@@ -26,7 +26,6 @@ namespace BusinessLogic.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
-        private readonly IUserRoleRepository _userRoleRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
         private readonly IAuditService _auditService;
@@ -34,14 +33,12 @@ namespace BusinessLogic.Services
         public UserService(
             IUserRepository userRepository,
             IRoleRepository roleRepository,
-            IUserRoleRepository userRoleRepository,
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             IAuditService auditService)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
-            _userRoleRepository = userRoleRepository;
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _auditService = auditService;
@@ -62,7 +59,17 @@ namespace BusinessLogic.Services
                 throw new InvalidOperationException("Username already exists");
             }
 
-            // Create user
+            // Validate role if provided
+            if (dto.RoleId.HasValue)
+            {
+                var role = await _roleRepository.GetAsync(dto.RoleId.Value);
+                if (role == null)
+                {
+                    throw new InvalidOperationException($"Role with ID {dto.RoleId} not found");
+                }
+            }
+
+            // Create user with single role
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -72,31 +79,11 @@ namespace BusinessLogic.Services
                 PasswordHash = _passwordService.HashPassword(dto.Password),
                 IsActive = true,
                 CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
+                UpdatedAt = DateTimeOffset.UtcNow,
+                RoleId = dto.RoleId
             };
 
             await _userRepository.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Assign roles
-            foreach (var roleId in dto.RoleIds)
-            {
-                var role = await _roleRepository.GetAsync(roleId);
-                if (role == null)
-                {
-                    throw new InvalidOperationException($"Role with ID {roleId} not found");
-                }
-
-                var userRole = new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = roleId,
-                    AssignedAt = DateTimeOffset.UtcNow
-                };
-
-                await _userRoleRepository.AddAsync(userRole);
-            }
-
             await _unitOfWork.SaveChangesAsync();
 
             // Audit log
@@ -108,8 +95,8 @@ namespace BusinessLogic.Services
                 new { user.Username, user.Email, user.Name }
             );
 
-            // Get user with roles
-            var createdUser = await _userRepository.GetByIdWithRolesAsync(user.Id);
+            // Get user with role
+            var createdUser = await _userRepository.GetByIdWithRoleAsync(user.Id);
             return MapUserToDto(createdUser!);
         }
 
@@ -157,7 +144,7 @@ namespace BusinessLogic.Services
                 new { user.Username, user.Email, user.Name }
             );
 
-            var updatedUser = await _userRepository.GetByIdWithRolesAsync(user.Id);
+            var updatedUser = await _userRepository.GetByIdWithRoleAsync(user.Id);
             return MapUserToDto(updatedUser!);
         }
 
@@ -232,7 +219,7 @@ namespace BusinessLogic.Services
 
         public async Task<UserDto?> GetUserByIdAsync(Guid userId)
         {
-            var user = await _userRepository.GetByIdWithRolesAsync(userId);
+            var user = await _userRepository.GetByIdWithRoleAsync(userId);
             return user != null ? MapUserToDto(user) : null;
         }
 
@@ -262,50 +249,47 @@ namespace BusinessLogic.Services
                 throw new InvalidOperationException("Role not found");
             }
 
-            var exists = await _userRoleRepository.ExistsAsync(userId, roleId);
-            if (exists)
-            {
-                throw new InvalidOperationException("User already has this role");
-            }
+            // Assign single role to user (replaces any existing role)
+            user.RoleId = roleId;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
 
-            var userRole = new UserRole
-            {
-                UserId = userId,
-                RoleId = roleId,
-                AssignedAt = DateTimeOffset.UtcNow
-            };
-
-            await _userRoleRepository.AddAsync(userRole);
+            _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
             // Audit log
             await _auditService.LogAsync(
                 AuditAction.Assign,
                 actorId,
-                nameof(UserRole),
-                null,
+                nameof(User),
+                user.Id,
                 new { UserId = userId, RoleId = roleId, RoleName = role.Name }
             );
         }
 
-        public async Task RemoveRoleAsync(Guid userId, Guid roleId, Guid? actorId = null)
+        public async Task ClearRoleAsync(Guid userId, Guid? actorId = null)
         {
-            var userRole = await _userRoleRepository.GetByUserAndRoleAsync(userId, roleId);
-            if (userRole == null)
+            var user = await _userRepository.GetByIdWithRoleAsync(userId);
+            if (user == null)
             {
-                throw new InvalidOperationException("User role not found");
+                throw new InvalidOperationException("User not found");
             }
 
-            _userRoleRepository.Remove(userRole);
+            var previousRoleName = user.Role?.Name;
+
+            // Clear the user's role
+            user.RoleId = null;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
 
             // Audit log
             await _auditService.LogAsync(
                 AuditAction.Update,
                 actorId,
-                nameof(UserRole),
-                null,
-                new { Action = "RemoveRole", UserId = userId, RoleId = roleId }
+                nameof(User),
+                user.Id,
+                new { Action = "ClearRole", UserId = userId, PreviousRole = previousRoleName }
             );
         }
 
@@ -355,13 +339,13 @@ namespace BusinessLogic.Services
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                Roles = user.UserRoles.Select(ur => new RoleDto
+                Role = user.Role != null ? new RoleDto
                 {
-                    Id = ur.Role.Id,
-                    Code = ur.Role.Code,
-                    Name = ur.Role.Name,
-                    Description = ur.Role.Description
-                }).ToList()
+                    Id = user.Role.Id,
+                    Code = user.Role.Code,
+                    Name = user.Role.Name,
+                    Description = user.Role.Description
+                } : null
             };
         }
     }
