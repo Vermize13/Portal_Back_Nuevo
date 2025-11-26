@@ -28,6 +28,12 @@ namespace API.Services
             _logger = logger;
         }
 
+        private string GetIncidentUrl(Guid projectId, Guid incidentId)
+        {
+            var baseUrl = _emailSettings.FrontendUrl.TrimEnd('/');
+            return $"{baseUrl}/projects/{projectId}/incidents/{incidentId}";
+        }
+
         public async Task NotifyIncidentAssignmentAsync(Incident incident, Guid assigneeId)
         {
             // Create in-app notification
@@ -51,6 +57,7 @@ namespace API.Services
                 var assignee = await _userRepository.GetAsync(assigneeId);
                 if (assignee != null && !string.IsNullOrEmpty(assignee.Email))
                 {
+                    var incidentUrl = GetIncidentUrl(incident.ProjectId, incident.Id);
                     var subject = "Nueva incidencia asignada";
                     var htmlBody = $@"
                         <h2>Nueva incidencia asignada</h2>
@@ -62,7 +69,8 @@ namespace API.Services
                             <li><strong>Severidad:</strong> {incident.Severity}</li>
                             <li><strong>Prioridad:</strong> {incident.Priority}</li>
                         </ul>
-                        <p>Por favor, revisa los detalles en el sistema.</p>
+                        <p>Por favor, revisa los detalles en el sistema:</p>
+                        <p><a href=""{incidentUrl}"" style=""display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;"">Ver incidencia</a></p>
                     ";
                     await SendEmailAsync(assignee.Email, assignee.Name, subject, htmlBody);
                 }
@@ -98,6 +106,7 @@ namespace API.Services
                     var assignee = await _userRepository.GetAsync(incident.AssigneeId.Value);
                     if (assignee != null && !string.IsNullOrEmpty(assignee.Email))
                     {
+                        var incidentUrl = GetIncidentUrl(incident.ProjectId, incident.Id);
                         var subject = "Cambio de estado de incidencia";
                         var htmlBody = $@"
                             <h2>Cambio de estado de incidencia</h2>
@@ -107,7 +116,8 @@ namespace API.Services
                                 <li><strong>Estado anterior:</strong> {oldStatus}</li>
                                 <li><strong>Estado nuevo:</strong> {newStatus}</li>
                             </ul>
-                            <p>Por favor, revisa los detalles en el sistema.</p>
+                            <p>Revisa los detalles de la incidencia:</p>
+                            <p><a href=""{incidentUrl}"" style=""display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;"">Ver incidencia</a></p>
                         ";
                         await SendEmailAsync(assignee.Email, assignee.Name, subject, htmlBody);
                     }
@@ -115,6 +125,53 @@ namespace API.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to send email notification for incident status change");
+                }
+            }
+        }
+
+        public async Task NotifyIncidentUpdateAsync(Incident incident, IEnumerable<string> changedFields)
+        {
+            if (incident.AssigneeId.HasValue)
+            {
+                var fieldsChanged = string.Join(", ", changedFields);
+                
+                // Create in-app notification
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = incident.AssigneeId.Value,
+                    IncidentId = incident.Id,
+                    Channel = NotificationChannel.InApp,
+                    Title = "Incidencia actualizada",
+                    Message = $"La incidencia {incident.Code} ha sido actualizada. Campos modificados: {fieldsChanged}",
+                    IsRead = false,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                await _notificationRepository.AddAsync(notification);
+
+                // Send email notification
+                try
+                {
+                    var assignee = await _userRepository.GetAsync(incident.AssigneeId.Value);
+                    if (assignee != null && !string.IsNullOrEmpty(assignee.Email))
+                    {
+                        var incidentUrl = GetIncidentUrl(incident.ProjectId, incident.Id);
+                        var subject = "Incidencia actualizada";
+                        var htmlBody = $@"
+                            <h2>Incidencia actualizada</h2>
+                            <p>Hola {assignee.Name},</p>
+                            <p>La incidencia <strong>{incident.Code}: {incident.Title}</strong> ha sido actualizada.</p>
+                            <p><strong>Campos modificados:</strong> {fieldsChanged}</p>
+                            <p>Revisa los cambios realizados:</p>
+                            <p><a href=""{incidentUrl}"" style=""display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;"">Ver incidencia</a></p>
+                        ";
+                        await SendEmailAsync(assignee.Email, assignee.Name, subject, htmlBody);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send email notification for incident update");
                 }
             }
         }

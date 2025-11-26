@@ -346,6 +346,13 @@ namespace API.Controllers
                     await _notificationService.NotifyIncidentStatusChangeAsync(incident, oldStatus, request.Status.Value);
                 }
 
+                // Send general update notification for other fields (excluding status and assignee changes which have their own notifications)
+                var otherChanges = changes.Where(c => c != "Status" && c != "AssigneeId").ToList();
+                if (otherChanges.Any())
+                {
+                    await _notificationService.NotifyIncidentUpdateAsync(incident, otherChanges);
+                }
+
                 // Audit log
                 await _auditService.LogAsync(
                     AuditAction.Update,
