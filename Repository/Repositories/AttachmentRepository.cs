@@ -15,7 +15,7 @@ namespace Repository.Repositories
 
         public async Task<IEnumerable<Attachment>> GetByIncidentIdAsync(Guid incidentId)
         {
-            return await _context.Attachments.Where(a => a.IncidentId == incidentId).ToListAsync();
+            return await _context.Attachments.Where(a => a.IncidentId == incidentId).Include("Uploader").ToListAsync();
         }
     }
 }

@@ -23,6 +23,7 @@ namespace API.Controllers
         private readonly IAuditService _auditService;
         private readonly INotificationService _notificationService;
         private readonly ILogger<IncidentsController> _logger;
+        private readonly IIncidentHistoryService _incidentHistoryService;
 
         public IncidentsController(
             IIncidentRepository incidentRepository,
@@ -32,7 +33,8 @@ namespace API.Controllers
             BugMgrDbContext context,
             IAuditService auditService,
             INotificationService notificationService,
-            ILogger<IncidentsController> logger)
+            ILogger<IncidentsController> logger,
+            IIncidentHistoryService incidentHistoryService)
         {
             _incidentRepository = incidentRepository;
             _projectRepository = projectRepository;
@@ -42,6 +44,7 @@ namespace API.Controllers
             _auditService = auditService;
             _notificationService = notificationService;
             _logger = logger;
+            _incidentHistoryService = incidentHistoryService;
         }
 
         /// <summary>
@@ -503,6 +506,8 @@ namespace API.Controllers
             var createdComment = await _context.IncidentComments
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == comment.Id);
+
+            await _incidentHistoryService.LogAsync(id, userId, "Comment", null, comment.Body);
 
             // Audit log
             await _auditService.LogAsync(

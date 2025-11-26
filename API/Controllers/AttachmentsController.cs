@@ -137,7 +137,7 @@ namespace API.Controllers
                 MimeType = a.MimeType,
                 FileSizeBytes = a.FileSizeBytes,
                 UploadedAt = a.UploadedAt
-            });
+            }).ToArray();
 
             return Ok(response);
         }

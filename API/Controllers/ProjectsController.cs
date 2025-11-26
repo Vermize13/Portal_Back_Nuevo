@@ -241,7 +241,7 @@ namespace API.Controllers
             }
 
             var members = await _projectRepository.GetProjectMembersAsync(id);
-            return Ok(members);
+            return Ok(members.ToArray());
         }
 
         /// <summary>

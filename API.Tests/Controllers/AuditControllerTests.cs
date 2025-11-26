@@ -35,7 +35,7 @@ namespace API.Tests.Controllers
 
             var expectedResponse = new AuditLogPagedResponse
             {
-                Logs = new List<AuditLogResponse>
+                Logs = new AuditLogResponse[]
                 {
                     new AuditLogResponse
                     {
@@ -82,7 +82,7 @@ namespace API.Tests.Controllers
 
             var expectedResponse = new AuditLogPagedResponse
             {
-                Logs = new List<AuditLogResponse>
+                Logs = new AuditLogResponse[]
                 {
                     new AuditLogResponse
                     {
@@ -127,7 +127,7 @@ namespace API.Tests.Controllers
 
             var expectedResponse = new AuditLogPagedResponse
             {
-                Logs = new List<AuditLogResponse>
+                Logs = new AuditLogResponse[]
                 {
                     new AuditLogResponse
                     {
@@ -176,7 +176,7 @@ namespace API.Tests.Controllers
 
             var expectedResponse = new AuditLogPagedResponse
             {
-                Logs = new List<AuditLogResponse>(),
+                Logs = Array.Empty<AuditLogResponse>(),
                 TotalCount = 0,
                 Page = 1,
                 PageSize = 10,

@@ -13,19 +13,22 @@ namespace API.Services
         private readonly Repository.IUnitOfWork _unitOfWork;
         private readonly FileSettings _fileSettings;
         private readonly ILogger<AttachmentService> _logger;
+        private readonly IIncidentHistoryService _incidentHistoryService;
 
         public AttachmentService(
             IAttachmentRepository attachmentRepository,
             IIncidentRepository incidentRepository,
             Repository.IUnitOfWork unitOfWork,
             IOptions<FileSettings> fileSettings,
-            ILogger<AttachmentService> logger)
+            ILogger<AttachmentService> logger,
+            IIncidentHistoryService incidentHistoryService)
         {
             _attachmentRepository = attachmentRepository;
             _incidentRepository = incidentRepository;
             _unitOfWork = unitOfWork;
             _fileSettings = fileSettings.Value;
             _logger = logger;
+            _incidentHistoryService = incidentHistoryService;
         }
 
         public async Task<Attachment> UploadAttachmentAsync(Guid incidentId, Guid userId, IFormFile file)
@@ -98,6 +101,9 @@ namespace API.Services
             await _attachmentRepository.AddAsync(attachment);
             _logger.LogInformation("Attachment {FileName} uploaded for incident {IncidentId}", file.FileName, incidentId);
 
+            // Log incident history
+            await _incidentHistoryService.LogAsync(incidentId, userId, "Attachment", null, attachment.FileName);
+
             return attachment;
         }
 
@@ -137,6 +143,9 @@ namespace API.Services
                 File.Delete(attachment.StoragePath);
                 _logger.LogInformation("Deleted attachment file {FilePath}", attachment.StoragePath);
             }
+
+            // Log history before removing
+            await _incidentHistoryService.LogAsync(attachment.IncidentId, attachment.UploadedBy, "Attachment", attachment.FileName, null);
 
             // Delete record from database
             _attachmentRepository.Remove(attachment);

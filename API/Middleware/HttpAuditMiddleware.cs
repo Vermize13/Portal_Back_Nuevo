@@ -72,17 +72,14 @@ namespace API.Middleware
                     // Log the HTTP request asynchronously without blocking the response
                     // Note: Task.Run is used for simplicity. For high-traffic applications,
                     // consider using a background service with a queue to avoid thread pool exhaustion
-                    _ = Task.Run(async () =>
+                    try
                     {
-                        try
-                        {
-                            await auditService.LogHttpRequestAsync(actorId, httpMethod, httpPath, statusCode, durationMs, ipAddress, userAgent, requestId);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Failed to log HTTP request audit");
-                        }
-                    });
+                        await auditService.LogHttpRequestAsync(actorId, httpMethod, httpPath, statusCode, durationMs, ipAddress, userAgent, requestId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to log HTTP request audit");
+                    }
                 }
                 catch (Exception ex)
                 {
