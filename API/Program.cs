@@ -1,5 +1,6 @@
 using Infrastructure;
 using Repository;
+using Repository.Repositories;
 using BusinessLogic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -125,6 +126,8 @@ builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IIncidentHistoryService, IncidentHistoryService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -184,6 +187,41 @@ using (var scope = app.Services.CreateScope())
     {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
         logger?.LogError(ex, "Error seeding admin user");
+    }
+}
+
+// Seed roles at startup if not present
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<BugMgrDbContext>();
+
+        var rolesToSeed = new[]
+        {
+            new Role { Id = Guid.NewGuid(), Code = "admin", Name = "Administrador general" },
+            new Role { Id = Guid.NewGuid(), Code = "scrum_master", Name = "Scrum Master" },
+            new Role { Id = Guid.NewGuid(), Code = "product_owner", Name = "Product Owner" },
+            new Role { Id = Guid.NewGuid(), Code = "stakeholder", Name = "Stakeholder" },
+            new Role { Id = Guid.NewGuid(), Code = "lider_tecnico", Name = "Lider Tecnico" },
+            new Role { Id = Guid.NewGuid(), Code = "desarrollador", Name = "Desarrollador" },
+            new Role { Id = Guid.NewGuid(), Code = "qa_tester", Name = "QA/Tester" }
+        };
+
+        foreach (var role in rolesToSeed)
+        {
+            if (!db.Roles.Any(r => r.Code == role.Code))
+            {
+                db.Roles.Add(role);
+            }
+        }
+        db.SaveChanges();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
+        logger?.LogError(ex, "Error seeding roles");
     }
 }
 

@@ -25,7 +25,7 @@ namespace API.Controllers
         /// <param name="request">Invitation request containing full name, email, and role</param>
         /// <returns>Invitation response with details</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin,LiderTecnico,ProductOwner")]
+        [Authorize(Roles = "admin,lider_tecnico,product_owner")]
         [ProducesResponseType(typeof(InvitationResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -39,7 +39,7 @@ namespace WebApi.Controllers
         /// Endpoint solo para administradores
         /// </summary>
         [HttpGet("admin-only")]
-        [RoleAuthorization("Admin")]
+        [RoleAuthorization("admin")]
         public IActionResult AdminOnly()
         {
             var username = User.Identity?.Name ?? "Unknown";
@@ -53,7 +53,7 @@ namespace WebApi.Controllers
         /// Endpoint para administradores y Product Owners
         /// </summary>
         [HttpGet("management")]
-        [RoleAuthorization("Admin", "ProductOwner")]
+        [RoleAuthorization("admin", "product_owner")]
         public IActionResult Management()
         {
             var username = User.Identity?.Name ?? "Unknown";
@@ -71,7 +71,7 @@ namespace WebApi.Controllers
         /// Endpoint para todos los roles excepto Admin (ejemplo usando [Authorize])
         /// </summary>
         [HttpGet("developers")]
-        [Authorize(Roles = "Developer,Tester,ProductOwner")]
+        [Authorize(Roles = "desarrollador,qa_tester,product_owner")]
         public IActionResult Developers()
         {
             var username = User.Identity?.Name ?? "Unknown";
