@@ -45,6 +45,7 @@ namespace API.Services
                 Id = Guid.NewGuid(),
                 Action = AuditAction.HttpRequest,
                 ActorId = actorId,
+                EntityName = httpPath, // Set the HTTP path as the entity name for better visibility
                 RequestId = requestId ?? Guid.NewGuid(),
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
@@ -52,6 +53,13 @@ namespace API.Services
                 HttpPath = httpPath,
                 HttpStatusCode = statusCode,
                 DurationMs = durationMs,
+                DetailsJson = JsonConvert.SerializeObject(new
+                {
+                    Method = httpMethod,
+                    Path = httpPath,
+                    StatusCode = statusCode,
+                    DurationMs = durationMs
+                }),
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
