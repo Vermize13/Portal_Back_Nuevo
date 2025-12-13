@@ -82,6 +82,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Enable routing
+app.UseRouting();
+
+// CORS must be called after UseRouting and before UseAuthentication
 app.UseCors("AllowAll");
 
 app.UseAuthentication();

@@ -236,9 +236,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowAll");
-
+// HTTPS redirection should come before routing
 app.UseHttpsRedirection();
+
+// Enable routing
+app.UseRouting();
+
+// CORS must be called after UseRouting and before UseAuthentication
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
