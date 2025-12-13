@@ -236,6 +236,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// HTTPS redirection should come before routing
 app.UseHttpsRedirection();
 
 // Enable routing
