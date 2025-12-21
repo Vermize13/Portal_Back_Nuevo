@@ -13,6 +13,10 @@ namespace Domain.Entity
         public string Code { get; set; } = default!;
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
+        public string? TestData { get; set; }
+        public string? Evidence { get; set; }
+        public string? ExpectedBehavior { get; set; }
+        public BugType? BugType { get; set; }
         public IncidentSeverity Severity { get; set; } = IncidentSeverity.Medium;
         public IncidentPriority Priority { get; set; } = IncidentPriority.Should;
         public IncidentStatus Status { get; set; } = IncidentStatus.Open;

@@ -3466,6 +3466,21 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "testData": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "evidence": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "expectedBehavior": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "bugType": {
+                        "$ref": "#/components/schemas/BugType"
+                    },
                     "severity": {
                         "$ref": "#/components/schemas/IncidentSeverity"
                     },
@@ -3770,6 +3785,17 @@
                 },
                 "additionalProperties": false
             },
+            "BugType": {
+                "enum": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "type": "integer",
+                "format": "int32"
+            },
             "IncidentPriority": {
                 "enum": [
                     0,
@@ -3811,6 +3837,21 @@
                     "description": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "testData": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "evidence": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "expectedBehavior": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "bugType": {
+                        "$ref": "#/components/schemas/BugType"
                     },
                     "severity": {
                         "$ref": "#/components/schemas/IncidentSeverity"
@@ -4378,6 +4419,21 @@
                     "description": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "testData": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "evidence": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "expectedBehavior": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "bugType": {
+                        "$ref": "#/components/schemas/BugType"
                     },
                     "severity": {
                         "$ref": "#/components/schemas/IncidentSeverity"

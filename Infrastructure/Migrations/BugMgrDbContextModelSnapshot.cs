@@ -21,6 +21,7 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "audit_action", new[] { "create", "update", "delete", "login", "logout", "assign", "transition", "backup", "restore", "upload", "download", "http_request", "sql_command" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "bugtype", new[] { "functional", "visual", "performance", "security", "other" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "incident_priority", new[] { "wont", "could", "should", "must" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "incident_severity", new[] { "low", "medium", "high", "critical" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "incident_status", new[] { "open", "in_progress", "resolved", "closed", "rejected", "duplicated" });
@@ -179,6 +180,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("AssigneeId")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("BugType")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -194,6 +198,12 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateOnly?>("DueDate")
                         .HasColumnType("date");
+
+                    b.Property<string>("Evidence")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExpectedBehavior")
+                        .HasColumnType("text");
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
@@ -215,6 +225,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal?>("StoryPoints")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("TestData")
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()

@@ -10,6 +10,14 @@ namespace API.DTOs
 
         public string? Description { get; set; }
 
+        public string? TestData { get; set; }
+
+        public string? Evidence { get; set; }
+
+        public string? ExpectedBehavior { get; set; }
+
+        public BugType? BugType { get; set; }
+
         public IncidentSeverity? Severity { get; set; }
 
         public IncidentPriority? Priority { get; set; }

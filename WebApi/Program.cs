@@ -53,6 +53,7 @@ builder.Services.AddDbContext<BugMgrDbContext>(options =>
               .MapEnum<Domain.Entity.IncidentStatus>()
               .MapEnum<Domain.Entity.IncidentSeverity>()
               .MapEnum<Domain.Entity.IncidentPriority>()
+              .MapEnum<Domain.Entity.BugType>()
               .MapEnum<Domain.Entity.NotificationChannel>()));
 
 // Register repositories
@@ -82,6 +83,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Enable routing
+app.UseRouting();
+
+// CORS must be called after UseRouting and before UseAuthentication
 app.UseCors("AllowAll");
 
 app.UseAuthentication();

@@ -33,6 +33,7 @@ namespace Infrastructure
             NpgsqlModelBuilderExtensions.HasPostgresEnum<IncidentStatus>(b);
             NpgsqlModelBuilderExtensions.HasPostgresEnum<IncidentSeverity>(b);
             NpgsqlModelBuilderExtensions.HasPostgresEnum<IncidentPriority>(b);
+            NpgsqlModelBuilderExtensions.HasPostgresEnum<BugType>(b);
             NpgsqlModelBuilderExtensions.HasPostgresEnum<NotificationChannel>(b);
             NpgsqlModelBuilderExtensions.HasPostgresEnum<AuditAction>(b);
 
