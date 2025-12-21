@@ -178,6 +178,10 @@ namespace API.Controllers
                 Code = code,
                 Title = request.Title,
                 Description = request.Description,
+                TestData = request.TestData,
+                Evidence = request.Evidence,
+                ExpectedBehavior = request.ExpectedBehavior,
+                BugType = request.BugType,
                 Severity = request.Severity,
                 Priority = request.Priority,
                 Status = IncidentStatus.Open,
@@ -273,6 +277,34 @@ namespace API.Controllers
                 await TrackChange(id, userId, "Description", incident.Description, request.Description);
                 incident.Description = request.Description;
                 changes.Add("Description");
+            }
+
+            if (request.TestData != null && request.TestData != incident.TestData)
+            {
+                await TrackChange(id, userId, "TestData", incident.TestData, request.TestData);
+                incident.TestData = request.TestData;
+                changes.Add("TestData");
+            }
+
+            if (request.Evidence != null && request.Evidence != incident.Evidence)
+            {
+                await TrackChange(id, userId, "Evidence", incident.Evidence, request.Evidence);
+                incident.Evidence = request.Evidence;
+                changes.Add("Evidence");
+            }
+
+            if (request.ExpectedBehavior != null && request.ExpectedBehavior != incident.ExpectedBehavior)
+            {
+                await TrackChange(id, userId, "ExpectedBehavior", incident.ExpectedBehavior, request.ExpectedBehavior);
+                incident.ExpectedBehavior = request.ExpectedBehavior;
+                changes.Add("ExpectedBehavior");
+            }
+
+            if (request.BugType.HasValue && request.BugType != incident.BugType)
+            {
+                await TrackChange(id, userId, "BugType", incident.BugType?.ToString(), request.BugType.ToString());
+                incident.BugType = request.BugType;
+                changes.Add("BugType");
             }
 
             if (request.Severity.HasValue && request.Severity != incident.Severity)
@@ -662,6 +694,10 @@ namespace API.Controllers
                 Code = incident.Code,
                 Title = incident.Title,
                 Description = incident.Description,
+                TestData = incident.TestData,
+                Evidence = incident.Evidence,
+                ExpectedBehavior = incident.ExpectedBehavior,
+                BugType = incident.BugType,
                 Severity = incident.Severity,
                 Priority = incident.Priority,
                 Status = incident.Status,

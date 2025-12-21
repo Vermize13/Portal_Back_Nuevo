@@ -53,6 +53,7 @@ builder.Services.AddDbContext<BugMgrDbContext>(options =>
               .MapEnum<Domain.Entity.IncidentStatus>()
               .MapEnum<Domain.Entity.IncidentSeverity>()
               .MapEnum<Domain.Entity.IncidentPriority>()
+              .MapEnum<Domain.Entity.BugType>()
               .MapEnum<Domain.Entity.NotificationChannel>()));
 
 // Register repositories

@@ -11,6 +11,10 @@ namespace API.DTOs
         public string Code { get; set; } = default!;
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
+        public string? TestData { get; set; }
+        public string? Evidence { get; set; }
+        public string? ExpectedBehavior { get; set; }
+        public BugType? BugType { get; set; }
         public IncidentSeverity Severity { get; set; }
         public IncidentPriority Priority { get; set; }
         public IncidentStatus Status { get; set; }
