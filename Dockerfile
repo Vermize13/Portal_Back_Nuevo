@@ -4,18 +4,10 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy solution and project files
-COPY BugMgr.sln ./
-COPY Domain/Domain.csproj Domain/
-COPY Infrastructure/Infrastructure.csproj Infrastructure/
-COPY Repository/Repository.csproj Repository/
-COPY BusinessLogic/BusinessLogic.csproj BusinessLogic/
-COPY API/API.csproj API/
+COPY . .
 
 # Restore dependencies
 RUN dotnet restore BugMgr.sln
-
-# Copy source code
-COPY . .
 
 # Build the API project
 WORKDIR /src/API

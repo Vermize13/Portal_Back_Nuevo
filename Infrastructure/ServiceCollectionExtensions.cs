@@ -15,7 +15,12 @@ namespace Infrastructure
             services.AddDbContext<BugMgrDbContext>((serviceProvider, options) =>
             {
                 var interceptor = serviceProvider.GetRequiredService<SqlCommandAuditInterceptor>();
-                options.UseNpgsql(connectionString)
+                options.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    // Only BugType uses PostgreSQL enum type in the database
+                    // Other enums (IncidentStatus, Severity, Priority, etc.) are stored as integers
+                    npgsqlOptions.MapEnum<Domain.Entity.BugType>();
+                })
                        .AddInterceptors(interceptor);
             });
 

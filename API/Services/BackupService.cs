@@ -58,6 +58,7 @@ namespace API.Services
                 };
 
                 await _backupRepository.AddAsync(backup);
+                await _unitOfWork.SaveChangesAsync(); // Save to DB before running backup process
 
                 // Execute pg_dump
                 var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -128,23 +129,11 @@ namespace API.Services
                     throw new InvalidOperationException("Backup file not found");
                 }
 
-                var restore = new Restore
-                {
-                    Id = Guid.NewGuid(),
-                    BackupId = backupId,
-                    RequestedBy = userId,
-                    Status = "running",
-                    StartedAt = DateTimeOffset.UtcNow,
-                    Notes = notes
-                };
-
-                await _restoreRepository.AddAsync(restore);
+                var startedAt = DateTimeOffset.UtcNow;
 
                 // Execute pg_restore
                 var connectionString = _configuration.GetConnectionString("DefaultConnection");
                 var connParams = ParseConnectionString(connectionString ?? "");
-                
-                restore.TargetDb = connParams.Database;
 
                 var pgRestorePath = Path.Combine(_backupSettings.PostgresPath, "pg_restore");
                 var arguments = $"-h {connParams.Host} -p {connParams.Port} -U {connParams.Username} -d {connParams.Database} -c -v \"{backup.StoragePath}\"";
@@ -170,19 +159,21 @@ namespace API.Services
 
                 await process.WaitForExitAsync();
 
-                if (process.ExitCode == 0)
+                // Create and save restore record AFTER pg_restore completes
+                // (pg_restore with -c drops all tables, so we must insert after it finishes)
+                var restore = new Restore
                 {
-                    restore.Status = "completed";
-                    restore.FinishedAt = DateTimeOffset.UtcNow;
-                }
-                else
-                {
-                    restore.Status = "failed";
-                    restore.FinishedAt = DateTimeOffset.UtcNow;
-                    restore.Notes = $"pg_restore failed with exit code {process.ExitCode}. {notes ?? ""}";
-                }
+                    Id = Guid.NewGuid(),
+                    BackupId = backupId,
+                    RequestedBy = userId,
+                    Status = process.ExitCode == 0 ? "completed" : "failed",
+                    StartedAt = startedAt,
+                    FinishedAt = DateTimeOffset.UtcNow,
+                    TargetDb = connParams.Database,
+                    Notes = process.ExitCode == 0 ? notes : $"pg_restore failed with exit code {process.ExitCode}. {notes ?? ""}"
+                };
 
-                _restoreRepository.Update(restore);
+                await _restoreRepository.AddAsync(restore);
                 await _unitOfWork.SaveChangesAsync();
                 return restore;
             }

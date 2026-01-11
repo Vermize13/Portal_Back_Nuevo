@@ -140,7 +140,7 @@ namespace API.Services
             );
 
             var csv = new StringBuilder();
-            csv.AppendLine("Id,Action,ActorId,ActorUsername,EntityName,EntityId,IpAddress,UserAgent,CreatedAt,Details,HttpMethod,HttpPath,HttpStatusCode,DurationMs,SqlCommand,SqlParameters");
+            csv.AppendLine("Id,Action,ActorId,ActorUsername,EntityName,IpAddress,UserAgent,CreatedAt,Details,HttpMethod,HttpPath,HttpStatusCode,DurationMs,SqlCommand,SqlParameters");
 
             foreach (var log in logs)
             {
@@ -149,7 +149,6 @@ namespace API.Services
                               $"{log.ActorId}," +
                               $"\"{log.Actor?.Username ?? ""}\"," +
                               $"\"{log.EntityName ?? ""}\"," +
-                              $"{log.EntityId}," +
                               $"\"{log.IpAddress ?? ""}\"," +
                               $"\"{log.UserAgent?.Replace("\"", "\"\"") ?? ""}\"," +
                               $"{log.CreatedAt:yyyy-MM-dd HH:mm:ss}," +

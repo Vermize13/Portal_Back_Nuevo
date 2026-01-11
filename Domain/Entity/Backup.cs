@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entity
 {
@@ -6,6 +7,8 @@ namespace Domain.Entity
     {
         public Guid Id { get; set; }
         public Guid CreatedBy { get; set; }
+        
+        [ForeignKey("CreatedBy")]
         public User Creator { get; set; } = default!;
         public string StoragePath { get; set; } = default!;
         public string Strategy { get; set; } = default!;
