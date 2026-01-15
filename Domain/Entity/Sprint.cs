@@ -7,6 +7,7 @@ namespace Domain.Entity
         public Guid Id { get; set; }
         public Guid ProjectId { get; set; }
         public Project Project { get; set; } = default!;
+        public int Number { get; set; } // Sprint number within the project
         public string Name { get; set; } = default!;
         public string? Goal { get; set; }
         public DateOnly StartDate { get; set; }
@@ -15,3 +16,4 @@ namespace Domain.Entity
         public DateTimeOffset CreatedAt { get; set; }
     }
 }
+

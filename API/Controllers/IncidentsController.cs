@@ -64,6 +64,7 @@ namespace API.Controllers
             var query = _context.Incidents
                 .Include(i => i.Reporter)
                 .Include(i => i.Assignee)
+                .Include(i => i.Sprint)
                 .Include(i => i.Labels).ThenInclude(il => il.Label)
                 .Include(i => i.Comments)
                 .AsQueryable();
@@ -116,6 +117,7 @@ namespace API.Controllers
             var incident = await _context.Incidents
                 .Include(i => i.Reporter)
                 .Include(i => i.Assignee)
+                .Include(i => i.Sprint)
                 .Include(i => i.Labels).ThenInclude(il => il.Label)
                 .Include(i => i.Comments)
                 .FirstOrDefaultAsync(i => i.Id == id);
@@ -691,6 +693,8 @@ namespace API.Controllers
                 ProjectId = incident.ProjectId,
                 ProjectName = projectName ?? string.Empty,
                 SprintId = incident.SprintId,
+                SprintName = incident.Sprint?.Name,
+                SprintNumber = incident.Sprint?.Number,
                 Code = incident.Code,
                 Title = incident.Title,
                 Description = incident.Description,

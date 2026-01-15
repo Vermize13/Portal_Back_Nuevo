@@ -8,7 +8,8 @@ namespace API.DTOs
         [Required]
         public Guid ProjectId { get; set; }
 
-        public Guid? SprintId { get; set; }
+        [Required]
+        public Guid SprintId { get; set; }
 
         [Required]
         [StringLength(200)]

@@ -7,6 +7,7 @@ namespace Repository.Repositories
     public interface ISprintRepository : IGenericRepository<Sprint>
     {
         Task<IEnumerable<Sprint>> GetByProjectIdAsync(Guid projectId);
+        Task<int> GetCountByProjectIdAsync(Guid projectId);
     }
 
     public class SprintRepository : GenericRepository<Sprint>, ISprintRepository
@@ -17,5 +18,11 @@ namespace Repository.Repositories
         {
             return await _context.Sprints.Where(s => s.ProjectId == projectId).ToListAsync();
         }
+
+        public async Task<int> GetCountByProjectIdAsync(Guid projectId)
+        {
+            return await _context.Sprints.CountAsync(s => s.ProjectId == projectId);
+        }
     }
 }
+

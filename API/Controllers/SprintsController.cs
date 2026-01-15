@@ -98,10 +98,14 @@ namespace API.Controllers
                 return BadRequest(new { message = "End date must be after start date" });
             }
 
+            // Get the next sprint number for this project
+            var sprintCount = await _sprintRepository.GetCountByProjectIdAsync(projectId);
+
             var sprint = new Sprint
             {
                 Id = Guid.NewGuid(),
                 ProjectId = projectId,
+                Number = sprintCount + 1,
                 Name = request.Name,
                 Goal = request.Goal,
                 StartDate = request.StartDate,
@@ -127,6 +131,84 @@ namespace API.Controllers
                 $"Created sprint: {sprint.Name} for project {project.Name}");
 
             return CreatedAtAction(nameof(GetSprint), new { id = sprint.Id }, sprint);
+        }
+
+        /// <summary>
+        /// Actualiza un sprint existente
+        /// </summary>
+        /// <param name="id">ID del sprint</param>
+        /// <param name="request">Datos a actualizar</param>
+        /// <returns>Sprint actualizado</returns>
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(Sprint), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Sprint>> UpdateSprint(Guid id, [FromBody] UpdateSprintRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var sprint = await _sprintRepository.GetAsync(id);
+            if (sprint == null)
+            {
+                return NotFound();
+            }
+
+            // Validate dates if both are provided or if one changes relative to the other
+            var newStartDate = request.StartDate ?? sprint.StartDate;
+            var newEndDate = request.EndDate ?? sprint.EndDate;
+            if (newEndDate < newStartDate)
+            {
+                return BadRequest(new { message = "End date must be after start date" });
+            }
+
+            // Track changes for audit
+            var changes = new List<string>();
+
+            if (request.Name != null && request.Name != sprint.Name)
+            {
+                changes.Add($"Name: {sprint.Name} -> {request.Name}");
+                sprint.Name = request.Name;
+            }
+
+            if (request.Goal != null && request.Goal != sprint.Goal)
+            {
+                changes.Add($"Goal updated");
+                sprint.Goal = request.Goal;
+            }
+
+            if (request.StartDate.HasValue && request.StartDate != sprint.StartDate)
+            {
+                changes.Add($"StartDate: {sprint.StartDate} -> {request.StartDate}");
+                sprint.StartDate = request.StartDate.Value;
+            }
+
+            if (request.EndDate.HasValue && request.EndDate != sprint.EndDate)
+            {
+                changes.Add($"EndDate: {sprint.EndDate} -> {request.EndDate}");
+                sprint.EndDate = request.EndDate.Value;
+            }
+
+            if (changes.Any())
+            {
+                _sprintRepository.Update(sprint);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Auditoría
+                var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+                var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+                await _auditService.LogAsync(
+                    AuditAction.Update,
+                    userId,
+                    "Sprint",
+                    sprint.Id,
+                    ipAddress,
+                    userAgent,
+                    $"Updated sprint {sprint.Number} ({sprint.Name}): {string.Join(", ", changes)}");
+            }
+
+            return Ok(sprint);
         }
 
         /// <summary>
