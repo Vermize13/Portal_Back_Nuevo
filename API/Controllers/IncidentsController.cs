@@ -152,13 +152,10 @@ namespace API.Controllers
             if (project == null)
                 return BadRequest("Project not found");
 
-            // Validate sprint if provided
-            if (request.SprintId.HasValue)
-            {
-                var sprint = await _context.Sprints.FindAsync(request.SprintId.Value);
-                if (sprint == null || sprint.ProjectId != request.ProjectId)
-                    return BadRequest("Sprint not found or does not belong to the project");
-            }
+            // Validate sprint exists and belongs to project (required)
+            var sprint = await _context.Sprints.FindAsync(request.SprintId);
+            if (sprint == null || sprint.ProjectId != request.ProjectId)
+                return BadRequest("Sprint not found or does not belong to the project");
 
             // Validate assignee if provided
             if (request.AssigneeId.HasValue)
