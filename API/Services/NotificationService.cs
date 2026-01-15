@@ -31,7 +31,7 @@ namespace API.Services
         private string GetIncidentUrl(Guid projectId, Guid incidentId)
         {
             var baseUrl = (_emailSettings.FrontendUrl ?? "http://localhost:4200").TrimEnd('/');
-            return $"{baseUrl}/projects/{projectId}/incidents/{incidentId}";
+            return $"{baseUrl}/inicio/incidents/{incidentId}";
         }
 
         public async Task NotifyIncidentAssignmentAsync(Incident incident, Guid assigneeId)
