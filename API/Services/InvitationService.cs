@@ -214,38 +214,59 @@ namespace API.Services
         private async Task SendInvitationEmailAsync(UserInvitation invitation, string roleName)
         {
             var invitationLink = $"{_invitationSettings.FrontendBaseUrl}/register?token={Uri.EscapeDataString(invitation.Token)}";
+            var logoUrl = $"{_invitationSettings.FrontendBaseUrl}/assets/martinierelogo.png";
 
             var htmlBody = $@"
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset='UTF-8'>
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4a90d9; color: white; padding: 20px; text-align: center; }}
-        .content {{ padding: 20px; background-color: #f9f9f9; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #4a90d9; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }}
-        .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }}
+        .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; }}
+        .header {{ background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: white; padding: 30px 20px; text-align: center; }}
+        .logo {{ max-width: 180px; margin-bottom: 15px; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: 600; }}
+        .content {{ padding: 30px 20px; background-color: #ffffff; }}
+        .greeting {{ font-size: 18px; margin-bottom: 20px; }}
+        .message {{ margin-bottom: 20px; color: #555; }}
+        .role-badge {{ display: inline-block; background-color: #e8f4fd; color: #1e3a5f; padding: 4px 12px; border-radius: 4px; font-weight: 600; }}
+        .button-container {{ text-align: center; margin: 30px 0; }}
+        .button {{ display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: white !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; }}
+        .link-section {{ background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0; }}
+        .link-section p {{ margin: 5px 0; font-size: 13px; color: #666; }}
+        .link-section a {{ color: #2c5282; word-break: break-all; }}
+        .expiration {{ background-color: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 6px; margin: 20px 0; }}
+        .expiration p {{ margin: 0; color: #856404; font-size: 14px; }}
+        .footer {{ text-align: center; padding: 20px; background-color: #f8f9fa; color: #666; font-size: 12px; border-top: 1px solid #eee; }}
+        .footer p {{ margin: 5px 0; }}
     </style>
 </head>
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>You've Been Invited!</h1>
+            <img src='{logoUrl}' alt='Martiniere' class='logo' />
+            <h1>¡Has sido invitado!</h1>
         </div>
         <div class='content'>
-            <p>Hello {invitation.FullName},</p>
-            <p>You have been invited to join the BugMgr system as a <strong>{roleName}</strong>.</p>
-            <p>Click the button below to complete your registration:</p>
-            <p style='text-align: center;'>
-                <a href='{invitationLink}' class='button'>Complete Registration</a>
-            </p>
-            <p>Or copy and paste this link into your browser:</p>
-            <p style='word-break: break-all;'>{invitationLink}</p>
-            <p><strong>This invitation will expire on {invitation.ExpiresAt:MMMM dd, yyyy 'at' HH:mm} UTC.</strong></p>
+            <p class='greeting'>Hola <strong>{invitation.FullName}</strong>,</p>
+            <p class='message'>Has sido invitado a unirte al Sistema de Gestión de Incidencias de Martiniere con el rol de <span class='role-badge'>{roleName}</span>.</p>
+            <p class='message'>Para completar tu registro y activar tu cuenta, haz clic en el siguiente botón:</p>
+            <div class='button-container'>
+                <a href='{invitationLink}' class='button'>Completar Registro</a>
+            </div>
+            <div class='link-section'>
+                <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                <a href='{invitationLink}'>{invitationLink}</a>
+            </div>
+            <div class='expiration'>
+                <p>⏰ <strong>Esta invitación expira el {invitation.ExpiresAt:dd 'de' MMMM 'de' yyyy 'a las' HH:mm} UTC.</strong></p>
+            </div>
+            <p class='message'>Si no solicitaste esta invitación, puedes ignorar este correo de forma segura.</p>
         </div>
         <div class='footer'>
-            <p>This is an automated message from BugMgr System. Please do not reply.</p>
+            <p><strong>Martiniere - Sistema de Gestión de Incidencias</strong></p>
+            <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
         </div>
     </div>
 </body>
@@ -255,7 +276,7 @@ namespace API.Services
             {
                 From = $"{_emailSettings.FromName} <{_emailSettings.FromEmail}>",
                 To = [invitation.Email],
-                Subject = "You've Been Invited to Join BugMgr",
+                Subject = "Invitación para unirte a Martiniere",
                 HtmlBody = htmlBody
             };
 

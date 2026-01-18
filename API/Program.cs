@@ -131,7 +131,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 
 // Configure CORS
 var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() 
-    ?? new[] { "http://localhost:3000", "http://localhost:4200", "https://bugmgr.vercel.app" };
+    ?? new[] { "http://localhost:3000", "http://localhost:4200", "https://martiniere.app", "https://bugmgr.vercel.app", "https://www.martiniere.app" };
 
 builder.Services.AddCors(options =>
 {
