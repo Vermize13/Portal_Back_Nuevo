@@ -71,6 +71,22 @@ namespace API.Controllers
 
             // Note: Attachments are loaded separately for performance
 
+            // Apply project authorization filtering
+            var userId = GetUserId();
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            
+            // Apply project filtering for non-admin users
+            if (user?.Role?.Code != "Admin")
+            {
+                var authorizedProjectIds = await _context.ProjectMembers
+                    .Where(pm => pm.UserId == userId && pm.IsActive)
+                    .Select(pm => pm.ProjectId)
+                    .ToListAsync();
+                
+                query = query.Where(i => authorizedProjectIds.Contains(i.ProjectId));
+            }
+            // Admin users see all incidents (no filtering)
+
             if (projectId.HasValue)
                 query = query.Where(i => i.ProjectId == projectId.Value);
 

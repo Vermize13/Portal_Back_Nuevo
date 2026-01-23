@@ -25,10 +25,12 @@ namespace API.Services
 
         public async Task<AuthResponse?> LoginAsync(LoginRequest request, string ipAddress, string userAgent)
         {
-            // Find user with role
+            // Find user with role - support login with username OR email (case-insensitive for email)
             var user = await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
+                .FirstOrDefaultAsync(u => 
+                    u.Username == request.Username || 
+                    u.Email.ToLower() == request.Username.ToLower());
 
             if (user == null || !user.IsActive)
                 return null;

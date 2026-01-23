@@ -48,7 +48,19 @@ namespace API.Controllers
         [ProducesResponseType(typeof(IEnumerable<Project>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
         {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var projects = await _projectRepository.GetAllAsync();
+            
+            // Apply project authorization filtering
+            var user = await _userRepository.GetAsync(userId);
+            if (user?.Role?.Code != "Admin")
+            {
+                // Non-admin: filter to only projects where user is an active member
+                var userProjectIds = await _projectRepository.GetUserProjectIdsAsync(userId);
+                projects = projects.Where(p => userProjectIds.Contains(p.Id)).ToList();
+            }
+            // Admin: return all projects (no filtering)
+            
             return Ok(projects);
         }
 

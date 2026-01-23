@@ -21,13 +21,23 @@ namespace WebApi.Controllers
             _dashboardService = dashboardService;
         }
 
+        private Guid GetUserId()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        }
+
         /// <summary>
         /// RF4.1: Get incident metrics by status, priority, and severity
         /// </summary>
         [HttpPost("metrics")]
         public async Task<ActionResult<IncidentMetricsResponse>> GetIncidentMetrics([FromBody] DashboardFilterRequest filter)
         {
-            var metrics = await _dashboardService.GetIncidentMetricsAsync(filter);
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var metrics = await _dashboardService.GetIncidentMetricsAsync(filter, userId);
             return Ok(metrics);
         }
 
@@ -37,7 +47,11 @@ namespace WebApi.Controllers
         [HttpGet("sprints")]
         public async Task<ActionResult<List<SprintIncidentsResponse>>> GetSprintIncidents([FromQuery] Guid? projectId = null)
         {
-            var sprints = await _dashboardService.GetSprintIncidentsAsync(projectId);
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var sprints = await _dashboardService.GetSprintIncidentsAsync(projectId, userId);
             return Ok(sprints);
         }
 
@@ -47,7 +61,11 @@ namespace WebApi.Controllers
         [HttpPost("mttr")]
         public async Task<ActionResult<MTTRResponse>> GetMTTR([FromBody] DashboardFilterRequest filter)
         {
-            var mttr = await _dashboardService.GetMTTRAsync(filter);
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var mttr = await _dashboardService.GetMTTRAsync(filter, userId);
             return Ok(mttr);
         }
 
@@ -57,7 +75,11 @@ namespace WebApi.Controllers
         [HttpPost("evolution")]
         public async Task<ActionResult<List<IncidentEvolutionResponse>>> GetIncidentEvolution([FromBody] DashboardFilterRequest filter)
         {
-            var evolution = await _dashboardService.GetIncidentEvolutionAsync(filter);
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var evolution = await _dashboardService.GetIncidentEvolutionAsync(filter, userId);
             return Ok(evolution);
         }
     }

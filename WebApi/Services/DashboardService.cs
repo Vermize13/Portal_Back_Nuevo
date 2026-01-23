@@ -14,10 +14,40 @@ namespace WebApi.Services
             _context = context;
         }
 
+        /// <summary>
+        /// Get list of authorized project IDs for a user
+        /// Returns empty list for admins (no filtering), list of project IDs for non-admins
+        /// </summary>
+        private async Task<List<Guid>> GetUserAuthorizedProjectIdsAsync(Guid userId)
+        {
+            // Check if user is admin
+            var user =await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (user?.Role?.Code == "Admin")
+            {
+                // Admins see all projects - return empty list (no filtering)
+                return new List<Guid>();
+            }
+
+            // Non-admins see only their assigned projects
+            return await _context.ProjectMembers
+                .Where(pm => pm.UserId == userId && pm.IsActive)
+                .Select(pm => pm.ProjectId)
+                .ToListAsync();
+        }
+
         // RF4.1: Get metrics by status, priority, and severity
-        public async Task<IncidentMetricsResponse> GetIncidentMetricsAsync(DashboardFilterRequest filter)
+        public async Task<IncidentMetricsResponse> GetIncidentMetricsAsync(DashboardFilterRequest filter, Guid userId)
         {
             var query = _context.Incidents.AsQueryable();
+
+            // Apply project authorization filtering
+            var authorizedProjectIds = await GetUserAuthorizedProjectIdsAsync(userId);
+            if (authorizedProjectIds.Any())
+            {
+                // Non-admin: filter by authorized projects
+                query = query.Where(i => authorizedProjectIds.Contains(i.ProjectId));
+            }
+            // Admin: no filtering applied
 
             // Apply filters
             if (filter.ProjectId.HasValue)
@@ -49,9 +79,18 @@ namespace WebApi.Services
         }
 
         // RF4.2: Get opened/closed incidents by sprint
-        public async Task<List<SprintIncidentsResponse>> GetSprintIncidentsAsync(Guid? projectId)
+        public async Task<List<SprintIncidentsResponse>> GetSprintIncidentsAsync(Guid? projectId, Guid userId)
         {
             var query = _context.Sprints.AsQueryable();
+
+            // Apply project authorization filtering
+            var authorizedProjectIds = await GetUserAuthorizedProjectIdsAsync(userId);
+            if (authorizedProjectIds.Any())
+            {
+                // Non-admin: filter by authorized projects
+                query = query.Where(s => authorizedProjectIds.Contains(s.ProjectId));
+            }
+            // Admin: no additional filtering
 
             if (projectId.HasValue)
                 query = query.Where(s => s.ProjectId == projectId.Value);
@@ -87,11 +126,20 @@ namespace WebApi.Services
         }
 
         // RF4.3: Calculate Mean Time To Resolution (MTTR)
-        public async Task<MTTRResponse> GetMTTRAsync(DashboardFilterRequest filter)
+        public async Task<MTTRResponse> GetMTTRAsync(DashboardFilterRequest filter, Guid userId)
         {
             var query = _context.Incidents
                 .Where(i => i.ClosedAt != null && 
                            (i.Status == IncidentStatus.Closed || i.Status == IncidentStatus.Resolved));
+
+            // Apply project authorization filtering
+            var authorizedProjectIds = await GetUserAuthorizedProjectIdsAsync(userId);
+            if (authorizedProjectIds.Any())
+            {
+                // Non-admin: filter by authorized projects
+                query = query.Where(i => authorizedProjectIds.Contains(i.ProjectId));
+            }
+            // Admin: no additional filtering
 
             // Apply filters
             if (filter.ProjectId.HasValue)
@@ -134,12 +182,21 @@ namespace WebApi.Services
         }
 
         // RF4.4: Get incident evolution over time
-        public async Task<List<IncidentEvolutionResponse>> GetIncidentEvolutionAsync(DashboardFilterRequest filter)
+        public async Task<List<IncidentEvolutionResponse>> GetIncidentEvolutionAsync(DashboardFilterRequest filter, Guid userId)
         {
             var startDate = filter.StartDate ?? DateTime.UtcNow.AddMonths(-3);
             var endDate = filter.EndDate ?? DateTime.UtcNow;
 
             var query = _context.Incidents.AsQueryable();
+
+            // Apply project authorization filtering
+            var authorizedProjectIds = await GetUserAuthorizedProjectIdsAsync(userId);
+            if (authorizedProjectIds.Any())
+            {
+                // Non-admin: filter by authorized projects
+                query = query.Where(i => authorizedProjectIds.Contains(i.ProjectId));
+            }
+            // Admin: no additional filtering
 
             if (filter.ProjectId.HasValue)
                 query = query.Where(i => i.ProjectId == filter.ProjectId.Value);

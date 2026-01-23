@@ -14,6 +14,7 @@ namespace Repository.Repositories
         Task RemoveMemberAsync(Guid projectId, Guid userId);
         Task<IEnumerable<ProjectMember>> GetProjectMembersAsync(Guid projectId);
         Task<IEnumerable<Incident>> GetIncidentsByProjectIdAsync(Guid projectId);
+        Task<List<Guid>> GetUserProjectIdsAsync(Guid userId);
     }
 
     public class ProjectRepository : GenericRepository<Project>, IProjectRepository
@@ -81,6 +82,14 @@ namespace Repository.Repositories
         {
             return await _context.Incidents
                 .Where(i => i.ProjectId == projectId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Guid>> GetUserProjectIdsAsync(Guid userId)
+        {
+            return await _context.ProjectMembers
+                .Where(pm => pm.UserId == userId && pm.IsActive)
+                .Select(pm => pm.ProjectId)
                 .ToListAsync();
         }
     }
