@@ -20,6 +20,7 @@ namespace API.Controllers
         private readonly IIncidentRepository _incidentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuditService _auditService;
+        private readonly IRoleRepository _roleRepository;
         private readonly ILogger<ProjectsController> _logger;
 
         public ProjectsController(
@@ -29,6 +30,7 @@ namespace API.Controllers
             IIncidentRepository incidentRepository,
             IUnitOfWork unitOfWork,
             IAuditService auditService,
+            IRoleRepository roleRepository,
             ILogger<ProjectsController> logger)
         {
             _projectRepository = projectRepository;
@@ -37,6 +39,7 @@ namespace API.Controllers
             _incidentRepository = incidentRepository;
             _unitOfWork = unitOfWork;
             _auditService = auditService;
+            _roleRepository = roleRepository;
             _logger = logger;
         }
 
@@ -135,6 +138,22 @@ namespace API.Controllers
             };
 
             await _projectRepository.AddAsync(project);
+
+            // Assign creator as Admin member
+            var adminRole = await _roleRepository.GetByCodeAsync("Admin");
+            if (adminRole != null)
+            {
+                var member = new ProjectMember
+                {
+                    ProjectId = project.Id,
+                    UserId = userId,
+                    RoleId = adminRole.Id,
+                    JoinedAt = DateTimeOffset.UtcNow,
+                    IsActive = true
+                };
+                await _projectRepository.AddMemberAsync(member);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             // Auditoría
