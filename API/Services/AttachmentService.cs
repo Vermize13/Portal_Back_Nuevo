@@ -14,6 +14,7 @@ namespace API.Services
         private readonly FileSettings _fileSettings;
         private readonly ILogger<AttachmentService> _logger;
         private readonly IIncidentHistoryService _incidentHistoryService;
+        private readonly ISystemConfigurationService _configService;
 
         public AttachmentService(
             IAttachmentRepository attachmentRepository,
@@ -21,7 +22,8 @@ namespace API.Services
             Repository.IUnitOfWork unitOfWork,
             IOptions<FileSettings> fileSettings,
             ILogger<AttachmentService> logger,
-            IIncidentHistoryService incidentHistoryService)
+            IIncidentHistoryService incidentHistoryService,
+            ISystemConfigurationService configService)
         {
             _attachmentRepository = attachmentRepository;
             _incidentRepository = incidentRepository;
@@ -29,6 +31,7 @@ namespace API.Services
             _fileSettings = fileSettings.Value;
             _logger = logger;
             _incidentHistoryService = incidentHistoryService;
+            _configService = configService;
         }
 
         public async Task<Attachment> UploadAttachmentAsync(Guid incidentId, Guid userId, IFormFile file)
@@ -41,9 +44,12 @@ namespace API.Services
             }
 
             // Validate file size
-            if (file.Length > _fileSettings.MaxFileSizeBytes)
+            var maxSizeMB = await _configService.GetIntAsync("MaxUploadSize", 10); // Default 10MB
+            var maxSizeBytes = maxSizeMB * 1024 * 1024;
+            
+            if (file.Length > maxSizeBytes)
             {
-                throw new InvalidOperationException($"File size exceeds maximum allowed size of {_fileSettings.MaxFileSizeBytes} bytes");
+                throw new InvalidOperationException($"File size exceeds maximum allowed size of {maxSizeMB} MB");
             }
 
             // Validate file extension

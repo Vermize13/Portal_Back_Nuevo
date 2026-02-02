@@ -27,6 +27,7 @@ namespace Infrastructure
         public DbSet<Backup> Backups => Set<Backup>();
         public DbSet<Restore> Restores => Set<Restore>();
         public DbSet<UserInvitation> UserInvitations => Set<UserInvitation>();
+        public DbSet<SystemConfiguration> SystemConfigurations => Set<SystemConfiguration>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {

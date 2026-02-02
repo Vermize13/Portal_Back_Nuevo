@@ -55,8 +55,8 @@ namespace API.Controllers
             var projects = await _projectRepository.GetAllAsync();
             
             // Apply project authorization filtering
-            var user = await _userRepository.GetAsync(userId);
-            if (user?.Role?.Code != "Admin")
+            var user = await _userRepository.GetByIdWithRoleAsync(userId);
+            if (!string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase))
             {
                 // Non-admin: filter to only projects where user is an active member
                 var userProjectIds = await _projectRepository.GetUserProjectIdsAsync(userId);

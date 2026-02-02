@@ -76,7 +76,7 @@ namespace API.Controllers
             var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
             
             // Apply project filtering for non-admin users
-            if (user?.Role?.Code != "Admin")
+            if (!string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase))
             {
                 var authorizedProjectIds = await _context.ProjectMembers
                     .Where(pm => pm.UserId == userId && pm.IsActive)

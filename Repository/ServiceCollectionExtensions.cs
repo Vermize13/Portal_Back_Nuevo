@@ -19,6 +19,7 @@ namespace Repository
             services.AddScoped<Repositories.INotificationRepository, Repositories.NotificationRepository>();
             services.AddScoped<Repositories.IBackupRepository, Repositories.BackupRepository>();
             services.AddScoped<Repositories.IRestoreRepository, Repositories.RestoreRepository>();
+            services.AddScoped<Repositories.ISystemConfigurationRepository, Repositories.SystemConfigurationRepository>();
             return services;
         }
     }
