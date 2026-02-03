@@ -54,7 +54,8 @@ namespace API.Services
                     StoragePath = backupPath,
                     Strategy = "pg_dump",
                     Status = "running",
-                    StartedAt = DateTimeOffset.UtcNow
+                    StartedAt = DateTimeOffset.UtcNow,
+                    Notes = notes
                 };
 
                 await _backupRepository.AddAsync(backup);
@@ -94,7 +95,6 @@ namespace API.Services
                     backup.SizeBytes = fileInfo.Length;
                     backup.Status = "completed";
                     backup.FinishedAt = DateTimeOffset.UtcNow;
-                    backup.Notes = notes;
                 }
                 else
                 {
