@@ -598,6 +598,105 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Actualiza un comentario existente
+        /// </summary>
+        [HttpPut("{id}/comments/{commentId}")]
+        [ProducesResponseType(typeof(IncidentComment), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IncidentComment>> UpdateComment(Guid id, Guid commentId, [FromBody] UpdateCommentRequest request)
+        {
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var incident = await _incidentRepository.GetAsync(id);
+            if (incident == null)
+                return NotFound("Incident not found");
+
+            var comment = await _context.IncidentComments
+                .Include(c => c.Author)
+                .FirstOrDefaultAsync(c => c.Id == commentId && c.IncidentId == id);
+
+            if (comment == null)
+                return NotFound("Comment not found");
+
+            // Only author can update the comment
+            if (comment.AuthorId != userId)
+                return Forbid();
+
+            var oldBody = comment.Body;
+            comment.Body = request.Body;
+            // Add EditedAt field if it existed in the model, otherwise just logging it
+            // Assuming model might support it or we just track it in history
+
+            await _context.SaveChangesAsync();
+
+            await _incidentHistoryService.LogAsync(id, userId, "Comment", oldBody, request.Body);
+
+            // Audit log
+            await _auditService.LogAsync(
+                AuditAction.Update,
+                userId,
+                "IncidentComment",
+                comment.Id,
+                GetClientIp(),
+                GetUserAgent(),
+                new { incidentId = id, incident.Code, action = "UpdateComment" });
+
+            return Ok(comment);
+        }
+
+        /// <summary>
+        /// Elimina un comentario existente
+        /// </summary>
+        [HttpDelete("{id}/comments/{commentId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> DeleteComment(Guid id, Guid commentId)
+        {
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var incident = await _incidentRepository.GetAsync(id);
+            if (incident == null)
+                return NotFound("Incident not found");
+
+            var comment = await _context.IncidentComments
+                .FirstOrDefaultAsync(c => c.Id == commentId && c.IncidentId == id);
+
+            if (comment == null)
+                return NotFound("Comment not found");
+
+            // check if user is admin
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            var isAdmin = string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+
+            // Only author or admin can delete the comment
+            if (comment.AuthorId != userId && !isAdmin)
+                return Forbid();
+
+            _context.IncidentComments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            await _incidentHistoryService.LogAsync(id, userId, "Comment", comment.Body, "[Deleted]");
+
+            // Audit log
+            await _auditService.LogAsync(
+                AuditAction.Delete,
+                userId,
+                "IncidentComment",
+                comment.Id,
+                GetClientIp(),
+                GetUserAgent(),
+                new { incidentId = id, incident.Code, action = "DeleteComment" });
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// Añade etiquetas a una incidencia
         /// </summary>
         [HttpPost("{id}/labels/{labelId}")]
