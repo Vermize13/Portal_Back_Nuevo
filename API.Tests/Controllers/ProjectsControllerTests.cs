@@ -42,6 +42,7 @@ namespace API.Tests.Controllers
             _mockIncidentRepository = new Mock<IIncidentRepository>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockAuditService = new Mock<IAuditService>();
+            var mockRoleRepository = new Mock<IRoleRepository>();
             _mockLogger = new Mock<ILogger<ProjectsController>>();
             
             _controller = new ProjectsController(
@@ -51,6 +52,7 @@ namespace API.Tests.Controllers
                 _mockIncidentRepository.Object,
                 _mockUnitOfWork.Object,
                 _mockAuditService.Object,
+                mockRoleRepository.Object,
                 _mockLogger.Object
             );
 
