@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using API.DTOs;
 using API.Services;
+using Infrastructure;
+using System.Security.Claims;
+using Repository.Repositories;
 
 namespace API.Controllers
 {

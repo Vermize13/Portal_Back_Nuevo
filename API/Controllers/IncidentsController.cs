@@ -720,7 +720,7 @@ namespace API.Controllers
                 return NotFound("Comment not found");
 
             // check if user is admin
-            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            // var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId); // Already defined above
             var isAdmin = string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
 
             // Only author or admin can delete the comment
