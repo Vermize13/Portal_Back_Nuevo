@@ -16,6 +16,7 @@ namespace API.Controllers
     {
         private readonly ISprintRepository _sprintRepository;
         private readonly IProjectRepository _projectRepository;
+        private readonly IUserRepository _userRepository; // Added for role checks
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuditService _auditService;
         private readonly ILogger<SprintsController> _logger;
@@ -23,12 +24,14 @@ namespace API.Controllers
         public SprintsController(
             ISprintRepository sprintRepository,
             IProjectRepository projectRepository,
+            IUserRepository userRepository, // Injected
             IUnitOfWork unitOfWork,
             IAuditService auditService,
             ILogger<SprintsController> logger)
         {
             _sprintRepository = sprintRepository;
             _projectRepository = projectRepository;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _auditService = auditService;
             _logger = logger;
@@ -82,8 +85,20 @@ namespace API.Controllers
         [ProducesResponseType(typeof(Sprint), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Sprint>> CreateSprint(Guid projectId, [FromBody] CreateSprintRequest request)
         {
+            // Only Admin or Scrum Master can create sprints
+            var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var currentUser = await _userRepository.GetByIdWithRoleAsync(currentUserId);
+            var isGlobalAdmin = string.Equals(currentUser?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+            var isScrumMaster = string.Equals(currentUser?.Role?.Code, "scrum_master", StringComparison.OrdinalIgnoreCase);
+
+            if (!isGlobalAdmin && !isScrumMaster)
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -143,8 +158,20 @@ namespace API.Controllers
         [ProducesResponseType(typeof(Sprint), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Sprint>> UpdateSprint(Guid id, [FromBody] UpdateSprintRequest request)
         {
+            // Only Admin or Scrum Master can update sprints
+            var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var currentUser = await _userRepository.GetByIdWithRoleAsync(currentUserId);
+            var isGlobalAdmin = string.Equals(currentUser?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+            var isScrumMaster = string.Equals(currentUser?.Role?.Code, "scrum_master", StringComparison.OrdinalIgnoreCase);
+
+            if (!isGlobalAdmin && !isScrumMaster)
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -219,8 +246,20 @@ namespace API.Controllers
         [HttpPatch("{id}/close")]
         [ProducesResponseType(typeof(Sprint), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Sprint>> CloseSprint(Guid id)
         {
+            // Only Admin or Scrum Master can close sprints
+            var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var currentUser = await _userRepository.GetByIdWithRoleAsync(currentUserId);
+            var isGlobalAdmin = string.Equals(currentUser?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+            var isScrumMaster = string.Equals(currentUser?.Role?.Code, "scrum_master", StringComparison.OrdinalIgnoreCase);
+
+            if (!isGlobalAdmin && !isScrumMaster)
+            {
+                return Forbid();
+            }
+
             var sprint = await _sprintRepository.GetAsync(id);
             if (sprint == null)
             {
@@ -255,8 +294,20 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteSprint(Guid id)
         {
+            // Only Admin or Scrum Master can delete sprints
+            var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var currentUser = await _userRepository.GetByIdWithRoleAsync(currentUserId);
+            var isGlobalAdmin = string.Equals(currentUser?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+            var isScrumMaster = string.Equals(currentUser?.Role?.Code, "scrum_master", StringComparison.OrdinalIgnoreCase);
+
+            if (!isGlobalAdmin && !isScrumMaster)
+            {
+                return Forbid();
+            }
+
             var sprint = await _sprintRepository.GetAsync(id);
             if (sprint == null)
             {

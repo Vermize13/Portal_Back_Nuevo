@@ -15,10 +15,14 @@ namespace API.Controllers
     public class AuditController : ControllerBase
     {
         private readonly IAuditService _auditService;
+        private readonly Repository.Repositories.IUserRepository _userRepository; // Injected
+        private readonly BugMgrDbContext _context; // Access to roles if needed, or via repository
 
-        public AuditController(IAuditService auditService)
+        public AuditController(IAuditService auditService, Repository.Repositories.IUserRepository userRepository, BugMgrDbContext context)
         {
             _auditService = auditService;
+            _userRepository = userRepository;
+            _context = context;
         }
 
         /// <summary>
@@ -28,10 +32,25 @@ namespace API.Controllers
         /// <param name="filter">Filter criteria including user ID, action, date range, and pagination</param>
         /// <returns>Paginated list of audit logs</returns>
         [HttpPost("logs")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<AuditLogPagedResponse>> GetAuditLogs([FromBody] AuditFilterRequest filter)
         {
             try
             {
+                var userId = Guid.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)!);
+                // Check if user has permission (Admin, Scrum Master, Product Owner)
+                // Stakeholder, Tech Lead, Dev -> No Access
+                
+                var user = await _userRepository.GetByIdWithRoleAsync(userId);
+                var roleCode = user?.Role?.Code?.ToLower() ?? "";
+                
+                var allowedRoles = new[] { "admin", "scrum_master", "product_owner" };
+                
+                if (!allowedRoles.Contains(roleCode))
+                {
+                    return Forbid();
+                }
+
                 var logs = await _auditService.GetFilteredLogsAsync(filter);
                 return Ok(logs);
             }
@@ -47,10 +66,23 @@ namespace API.Controllers
         /// <param name="filter">Filter criteria for logs to export</param>
         /// <returns>CSV file containing audit logs</returns>
         [HttpPost("export")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> ExportAuditLogs([FromBody] AuditFilterRequest filter)
         {
             try
             {
+                var userId = Guid.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)!);
+                
+                var user = await _userRepository.GetByIdWithRoleAsync(userId);
+                var roleCode = user?.Role?.Code?.ToLower() ?? "";
+                
+                var allowedRoles = new[] { "admin", "scrum_master", "product_owner" };
+                
+                if (!allowedRoles.Contains(roleCode))
+                {
+                    return Forbid();
+                }
+
                 var csvData = await _auditService.ExportLogsAsync(filter);
                 
                 var fileName = $"audit_logs_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";

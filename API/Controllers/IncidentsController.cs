@@ -163,6 +163,13 @@ namespace API.Controllers
             if (userId == Guid.Empty)
                 return Unauthorized();
 
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
             // Validate project exists
             var project = await _projectRepository.GetAsync(request.ProjectId);
             if (project == null)
@@ -265,6 +272,13 @@ namespace API.Controllers
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
+
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
 
             var incident = await _context.Incidents
                 .Include(i => i.Reporter)
@@ -426,6 +440,13 @@ namespace API.Controllers
             if (userId == Guid.Empty)
                 return Unauthorized();
 
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
             var incident = await _context.Incidents
                 .Include(i => i.Reporter)
                 .Include(i => i.Assignee)
@@ -473,6 +494,13 @@ namespace API.Controllers
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
+
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
 
             var incident = await _context.Incidents
                 .Include(i => i.Reporter)
@@ -539,6 +567,13 @@ namespace API.Controllers
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
+
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
 
             var incident = await _incidentRepository.GetAsync(id);
             if (incident == null)
@@ -610,6 +645,13 @@ namespace API.Controllers
             if (userId == Guid.Empty)
                 return Unauthorized();
 
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
             var incident = await _incidentRepository.GetAsync(id);
             if (incident == null)
                 return NotFound("Incident not found");
@@ -660,6 +702,13 @@ namespace API.Controllers
             if (userId == Guid.Empty)
                 return Unauthorized();
 
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
             var incident = await _incidentRepository.GetAsync(id);
             if (incident == null)
                 return NotFound("Incident not found");
@@ -707,6 +756,13 @@ namespace API.Controllers
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
+
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
 
             var incident = await _incidentRepository.GetAsync(id);
             if (incident == null)
@@ -756,6 +812,13 @@ namespace API.Controllers
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
+
+            // Check if user is stakeholder (ReadOnly access)
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+            if (string.Equals(user?.Role?.Code, "stakeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
 
             var incident = await _incidentRepository.GetAsync(id);
             if (incident == null)
