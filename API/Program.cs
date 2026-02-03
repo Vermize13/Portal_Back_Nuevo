@@ -255,7 +255,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Enable HTTP request auditing
-app.UseHttpAuditing();
+
 
 app.MapControllers();
 

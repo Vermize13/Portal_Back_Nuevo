@@ -38,34 +38,7 @@ namespace API.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task LogHttpRequestAsync(Guid? actorId, string httpMethod, string httpPath, int statusCode, long durationMs, string? ipAddress, string? userAgent, Guid? requestId)
-        {
-            var auditLog = new AuditLog
-            {
-                Id = Guid.NewGuid(),
-                Action = AuditAction.HttpRequest,
-                ActorId = actorId,
-                EntityName = httpPath, // Set the HTTP path as the entity name for better visibility
-                RequestId = requestId ?? Guid.NewGuid(),
-                IpAddress = ipAddress,
-                UserAgent = userAgent,
-                HttpMethod = httpMethod,
-                HttpPath = httpPath,
-                HttpStatusCode = statusCode,
-                DurationMs = durationMs,
-                DetailsJson = JsonConvert.SerializeObject(new
-                {
-                    Method = httpMethod,
-                    Path = httpPath,
-                    StatusCode = statusCode,
-                    DurationMs = durationMs
-                }),
-                CreatedAt = DateTimeOffset.UtcNow
-            };
 
-            _context.AuditLogs.Add(auditLog);
-            await _context.SaveChangesAsync();
-        }
 
         public async Task LogSqlCommandAsync(string sqlCommand, string? sqlParameters, long durationMs)
         {

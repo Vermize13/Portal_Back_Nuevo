@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using API.Controllers;
 using Domain.Entity;
+using Repository;
 using Repository.Repositories;
 using FluentAssertions;
 
@@ -17,14 +18,22 @@ namespace API.Tests.Controllers
     public class UsersControllerTests
     {
         private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly Mock<IRoleRepository> _mockRoleRepository;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
         private readonly Mock<ILogger<UsersController>> _mockLogger;
         private readonly UsersController _controller;
 
         public UsersControllerTests()
         {
             _mockUserRepository = new Mock<IUserRepository>();
+            _mockRoleRepository = new Mock<IRoleRepository>();
+            _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockLogger = new Mock<ILogger<UsersController>>();
-            _controller = new UsersController(_mockUserRepository.Object, _mockLogger.Object);
+            _controller = new UsersController(
+                _mockUserRepository.Object, 
+                _mockRoleRepository.Object, 
+                _mockUnitOfWork.Object, 
+                _mockLogger.Object);
         }
 
         [Fact]

@@ -26,36 +26,7 @@ namespace API.Tests.Services
             _auditService = new AuditService(_context, _mockAuditLogRepository.Object);
         }
 
-        [Fact]
-        public async Task LogHttpRequestAsync_ShouldCreateAuditLog()
-        {
-            // Arrange
-            var actorId = Guid.NewGuid();
-            var requestId = Guid.NewGuid();
 
-            // Act
-            await _auditService.LogHttpRequestAsync(
-                actorId,
-                "POST",
-                "/api/users",
-                201,
-                150,
-                "192.168.1.1",
-                "Mozilla/5.0",
-                requestId);
-
-            // Assert
-            var auditLog = await _context.AuditLogs.FirstOrDefaultAsync(a => a.RequestId == requestId);
-            auditLog.Should().NotBeNull();
-            auditLog!.Action.Should().Be(AuditAction.HttpRequest);
-            auditLog.ActorId.Should().Be(actorId);
-            auditLog.HttpMethod.Should().Be("POST");
-            auditLog.HttpPath.Should().Be("/api/users");
-            auditLog.HttpStatusCode.Should().Be(201);
-            auditLog.DurationMs.Should().Be(150);
-            auditLog.IpAddress.Should().Be("192.168.1.1");
-            auditLog.UserAgent.Should().Be("Mozilla/5.0");
-        }
 
         [Fact]
         public async Task LogSqlCommandAsync_ShouldCreateAuditLog()
