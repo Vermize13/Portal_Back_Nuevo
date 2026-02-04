@@ -170,7 +170,7 @@ namespace API.Controllers
             // Update password if provided
             if (!string.IsNullOrEmpty(request.Password))
             {
-                user.PasswordHash = HashPassword(request.Password);
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
             }
 
             _userRepository.Update(user);
@@ -212,13 +212,5 @@ namespace API.Controllers
 
             return NoContent();
         }
-
-        private static string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
     }
 }
-

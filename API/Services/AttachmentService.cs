@@ -133,12 +133,44 @@ namespace API.Services
                 throw new InvalidOperationException("Attachment not found");
             }
 
-            if (!File.Exists(attachment.StoragePath))
+            var filePath = attachment.StoragePath;
+
+            // RF6.4: Fallback mechanism for handling absolute paths when environment changes
+            if (!File.Exists(filePath))
             {
-                throw new InvalidOperationException("Attachment file not found on disk");
+                _logger.LogWarning("Attachment file not found at stored path: {StoredPath}. Attempting to resolve...", filePath);
+
+                // Try to resolve path relative to current storage configuration/environment
+                var storedPath = attachment.StoragePath;
+                var fileName = Path.GetFileName(storedPath);
+                
+                // Handle possible OS separator mismatch (e.g. Windows path on Linux)
+                if (fileName == storedPath || fileName.Contains('\\') || fileName.Contains('/'))
+                {
+                    var lastSeparator = Math.Max(storedPath.LastIndexOf('/'), storedPath.LastIndexOf('\\'));
+                    if (lastSeparator >= 0)
+                    {
+                        fileName = storedPath.Substring(lastSeparator + 1);
+                    }
+                }
+
+                var storageDir = Path.GetFullPath(_fileSettings.StoragePath);
+                var incidentDir = Path.Combine(storageDir, attachment.IncidentId.ToString());
+                var candidatePath = Path.Combine(incidentDir, fileName);
+
+                if (File.Exists(candidatePath))
+                {
+                    _logger.LogInformation("Attachment found at candidate path: {CandidatePath}", candidatePath);
+                    filePath = candidatePath;
+                }
+                else
+                {
+                    _logger.LogError("Attachment file not found at stored path {StoredPath} nor candidate path {CandidatePath}", storedPath, candidatePath);
+                    throw new InvalidOperationException($"Attachment file not found on disk. Stored: '{storedPath}', Candidate: '{candidatePath}'");
+                }
             }
 
-            var fileStream = new FileStream(attachment.StoragePath, FileMode.Open, FileAccess.Read);
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             return (fileStream, attachment.FileName, attachment.MimeType);
         }
 

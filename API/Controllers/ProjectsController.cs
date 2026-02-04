@@ -55,10 +55,14 @@ namespace API.Controllers
             var projects = await _projectRepository.GetAllAsync();
             
             // Apply project authorization filtering
+            // Apply project authorization filtering
             var user = await _userRepository.GetByIdWithRoleAsync(userId);
-            if (!string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase))
+            var isAdmin = string.Equals(user?.Role?.Code, "admin", StringComparison.OrdinalIgnoreCase);
+            var isScrumMaster = string.Equals(user?.Role?.Code, "scrum_master", StringComparison.OrdinalIgnoreCase);
+
+            if (!isAdmin && !isScrumMaster)
             {
-                // Non-admin: filter to only projects where user is an active member
+                // Non-admin/Non-ScrumMaster: filter to only projects where user is an active member
                 var userProjectIds = await _projectRepository.GetUserProjectIdsAsync(userId);
                 projects = projects.Where(p => userProjectIds.Contains(p.Id)).ToList();
             }
