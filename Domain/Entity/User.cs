@@ -16,5 +16,8 @@ namespace Domain.Entity
         // Single role per user (1:N relationship)
         public Guid? RoleId { get; set; }
         public Role? Role { get; set; }
+
+        public string? ResetToken { get; set; }
+        public DateTimeOffset? ResetTokenExpires { get; set; }
     }
 }
