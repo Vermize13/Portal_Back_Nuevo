@@ -59,35 +59,47 @@ namespace API.Services
                 throw new InvalidOperationException($"File extension {extension} is not allowed");
             }
 
-            // Ensure storage directory exists
-            var storageDir = Path.GetFullPath(_fileSettings.StoragePath);
-            if (!Directory.Exists(storageDir))
-            {
-                Directory.CreateDirectory(storageDir);
-            }
-
-            // Create incident-specific directory
-            var incidentDir = Path.Combine(storageDir, incidentId.ToString());
-            if (!Directory.Exists(incidentDir))
-            {
-                Directory.CreateDirectory(incidentDir);
-            }
-
-            // Generate unique filename
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            var uniqueFilename = $"{timestamp}_{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(incidentDir, uniqueFilename);
-
-            // Save file and calculate checksum
+            string filePath;
             string checksum;
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+
+            try 
             {
-                await file.CopyToAsync(fileStream);
-                fileStream.Position = 0;
-                
-                using var sha256 = SHA256.Create();
-                var hashBytes = await sha256.ComputeHashAsync(fileStream);
-                checksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                // Ensure storage directory exists
+                var storageDir = Path.GetFullPath(_fileSettings.StoragePath);
+                if (!Directory.Exists(storageDir))
+                {
+                    _logger.LogInformation("Creating storage directory: {StoragePath}", storageDir);
+                    Directory.CreateDirectory(storageDir);
+                }
+
+                // Create incident-specific directory
+                var incidentDir = Path.Combine(storageDir, incidentId.ToString());
+                if (!Directory.Exists(incidentDir))
+                {
+                    _logger.LogInformation("Creating incident directory: {IncidentDir}", incidentDir);
+                    Directory.CreateDirectory(incidentDir);
+                }
+
+                // Generate unique filename
+                var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+                var uniqueFilename = $"{timestamp}_{Guid.NewGuid()}{extension}";
+                filePath = Path.Combine(incidentDir, uniqueFilename);
+
+                // Save file and calculate checksum
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                    fileStream.Position = 0;
+                    
+                    using var sha256 = SHA256.Create();
+                    var hashBytes = await sha256.ComputeHashAsync(fileStream);
+                    checksum = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save attachment file for incident {IncidentId}", incidentId);
+                throw new InvalidOperationException($"Failed to save file: {ex.Message}", ex);
             }
 
             // Create attachment record

@@ -56,12 +56,18 @@ namespace Infrastructure
                 .HasForeignKey(a => a.UploadedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // User-Role 1:N relationship
             b.Entity<User>()
                 .HasOne(u => u.Role)
                 .WithMany()
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // IncidentHistory configuration
+            b.Entity<IncidentHistory>()
+                .HasOne(h => h.ChangedByUser)
+                .WithMany()
+                .HasForeignKey(h => h.ChangedBy)
+                .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<User>().Property(x => x.Email).IsRequired();
             b.Entity<User>().Property(x => x.Username).IsRequired();

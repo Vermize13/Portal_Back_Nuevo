@@ -75,8 +75,14 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading attachment");
-                return StatusCode(500, "Error uploading attachment");
+                // Unpack exception for better logging
+                var errorMessage = ex.Message;
+                var innerMessage = ex.InnerException?.Message;
+                
+                _logger.LogError(ex, "Error uploading attachment for incident {IncidentId}. Error: {Error}. Inner: {Inner}", 
+                    incidentId, errorMessage, innerMessage);
+                    
+                return StatusCode(500, $"Error uploading attachment: {errorMessage}" + (innerMessage != null ? $" ({innerMessage})" : ""));
             }
         }
 
