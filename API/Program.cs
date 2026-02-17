@@ -250,6 +250,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 // CORS must be called after UseRouting and before UseAuthentication
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
