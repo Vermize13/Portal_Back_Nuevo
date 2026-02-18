@@ -142,15 +142,16 @@ namespace API.Services
 
                 // Try to resolve path relative to current storage configuration/environment
                 var storedPath = attachment.StoragePath;
+                // Handle possible OS separator mismatch (e.g. Windows path on Linux)
+                // We split by both separators and take the last part
                 var fileName = Path.GetFileName(storedPath);
                 
-                // Handle possible OS separator mismatch (e.g. Windows path on Linux)
-                if (fileName == storedPath || fileName.Contains('\\') || fileName.Contains('/'))
+                if (storedPath.Contains('/') || storedPath.Contains('\\'))
                 {
-                    var lastSeparator = Math.Max(storedPath.LastIndexOf('/'), storedPath.LastIndexOf('\\'));
-                    if (lastSeparator >= 0)
+                    var parts = storedPath.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 0)
                     {
-                        fileName = storedPath.Substring(lastSeparator + 1);
+                        fileName = parts.Last();
                     }
                 }
 
